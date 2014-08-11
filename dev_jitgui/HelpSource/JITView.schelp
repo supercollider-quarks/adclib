@@ -5,18 +5,16 @@ related:: MView, JITGui
 
 DESCRIPTION::
 JITView can display an object as its source code,
-change it by code, and do an action with it.
-It uses a UserView to have configurable display
-and interaction modes.
-For flexible display of number(s), see its subclass MView.
+change it by code, and do multiple actions with it.
+It has a UserView for configurable display and interaction modes.
+Its action is an MFunc to allow configurable actions when activated.
+For flexible display of number(s), see its subclass link::MView::.
 For modal guis for JIT-style objects, see MGui.
 
 
 code::
 // make a JITView: value, parent, bounds
-j = JITView(123, nil, Rect(10, 500, 300, 50)); // can enter new value
-// j.parent.bounds_(Rect(10, 500, 300, 50)); // crashes sclang! - why?
-j.dump;
+j = JITView(123, nil, Rect(10, Window.screenBounds.height - 100, 300, 40));
 
 // much of its internals are in a dict
 j.dict;
@@ -25,44 +23,44 @@ j.dict;
 j.label_(\yo);
 j.label_(\yoyoYO);
 
+// if its parent is a window:
 j.parent.name_("My JITView window");
 
 // set its value - can be anything
-j.value_(\symbol).refresh;
-j.value_(nil).refresh;
+j.value_(\symbol);
+j.value_(nil);
 j.value_( Pdefn(\abc, 123) );
 
 j.value_(30);
-// floats look like floats
+// floats are shown as floats
 j.value_(30.0);
 j.value_([30, 300]);
 j.value_([30, 300, 3000]);
 
 
 // checkNumber is a utility used to determine
-// whether value is a roundable number
+// whether value is a number or numbers (so it is roundable)
 j.checkNumber(12);
 j.checkNumber(nil);
-j.checkNumber([12, 12]);
+j.checkNumber([12, 12]); // true
 
 j.value_(10.123456); //default round is 0.0001
 j.putDict(\round, 0.01).refresh;
 j.putDict(\round, nil).refresh; //back to default 0.0001
 j.putDict(\round, 0).refresh; // no rounding at all
 
-j.action.add(\test, { |jv| "jv value is: %\n".postf(jv.value) })
+j.action.add(\test, { |jv| "jv value is: %\n".postf(jv.value) });
 
 // hitting enter on the view does action, or this:
 j.doAction;
 
-/* BASIC display mode is 'code' */
-// no need to switch to other modes
-// still, should work with no complaints
+// BASIC display mode of JITView is \code;
+// subclasses like MView have others, such as \number.
+// as there is only one mode, there is no real need to switch to others
 j.mode_(\code);
-
-// number mode only available in MView:
-// j.mode_(\number);
-
+// shortcut: typing alt-c on the view also switches to code mode.
+// or code shortcut:
+j.code;
 
 /* in code mode, one can enter any valid bit of code as value,
 	and it will be shown as a compileString.
@@ -76,7 +74,8 @@ j.mode_(\code);
 			but a doAction on the previous value.
 */
 
-// JITView can be hilited, e.g. to show its mapping to a controller
+// JITView can be hilited with a custom string and color,
+// e.g. to show a mapping to a controller
 j.hilite("sl1");
 j.nohilite;
 // customize hilite font and color
@@ -84,6 +83,16 @@ j.putDict(\hiFontCol, Color.magenta(1.0, 0.6));
 j.putDict(\hiFont, Font("Inconsolata", 24));
 j.hilite("sl1");
 j.nohilite;
+
+// to do
+// 1 * click and arrow into editstring for easier editing
+// 2 * FIX bug:
+// moving parent bounds creates an infinite loop
+// j.parent.bounds_(Rect(100, 100, 200, 100)); // endless spin
+// // only works like this:
+j.uv.drawingEnabled_(false);
+j.parent.bounds_(Rect(100, 100, 200, 100)); // no crash
+j.uv.drawingEnabled_(true);
 
 ::
 
@@ -109,7 +118,7 @@ a parent on which to display; if none is given, one is created.
 ARGUMENT:: bounds
 the bounds within which to display; if not given, bounds will be created.
 ARGUMENT:: options
-provision for display options, not used yet. 
+provision for display options, not used yet.
 
 
 INSTANCEMETHODS::
@@ -127,7 +136,7 @@ METHOD:: doAction
 evaluate the action.
 
 METHOD:: parent
-the parent view or window used for display. 
+the parent view or window used for display.
 
 METHOD:: bounds
 the bounds used for display
@@ -164,10 +173,10 @@ hilite a JITView with a label and a color
 METHOD:: nohilite
 
 METHOD:: funcs
-get all of uv's actions [drawFunc, keyDownAction, mouseDownAction, mouseMoveAction] 
+get all of uv's actions [drawFunc, keyDownAction, mouseDownAction, mouseMoveAction]
 
 METHOD:: mode
-set and get the current mode. 
+set and get the current mode.
 modes must be present in the various action functions.
 
 PRIVATE:: init, makeParent, makeBounds, makeDrawFunc, adjustFont, makeViews

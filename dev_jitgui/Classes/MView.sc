@@ -18,7 +18,7 @@ MView : JITView {
 		super.makeDrawFunc;
 		drawFunc.add(\number, { this.drawNumber }, active: false);
 		drawFunc.modes.put(\code, (on: \code, off: \number));
-		drawFunc.modes.put(\number, (on: \number, off: \code));
+		drawFunc.modes.put(\number, (on: [\number, \code]));
 	}
 
 	doEnter { |uv, mod = 0|
@@ -69,22 +69,9 @@ MView : JITView {
 			}
 		));
 
-		// // overrides return in keyDownFuncs
-		// dict[\keyNumFuncs].put($\r, { |uv|
-		// 	var newVal = try { dict[\editStr].interpret };
-		// 	if (newVal.notNil) {
-		// 		var spec = dict[\myspec];
-		// 		if (spec.notNil) {
-		// 			newVal = spec.constrain(newVal);
-		// 		} {
-		// 			"JITView - no spec for val, thus unconstrained: %\n"
-		// 			.postf(newVal);
-		// 		};
-		//
-		// 		this.valueAction_(newVal);
-		// 		dict.put(\editStr, nil);
-		// 	};
-		// });
+		// number mode with alt-n
+		dict[\keyDownAltFuncs].put($n, { |uv, key, mod|
+			this.mode_(\number.postcs) });
 
 		dict[\keyNumFuncs].parent_(dict[\keyDownFuncs]);
 
@@ -93,14 +80,21 @@ MView : JITView {
 			// [key, mod].postcs;
 			uv.focus(true);
 
-			if ("[]1234567890.e+-,".includes(key)) {
-				dict.put(\editStr, dict[\editStr] ? "" ++ key);
+			if (mod.isAlt) {
+				dict[\keyDownAltFuncs][key].value;
 			} {
-				dict[\keyNumFuncs][key].value(uv, mod);
+
+				if ("[]1234567890.e+-,".includes(key)) {
+					dict.put(\editStr, dict[\editStr] ? "" ++ key);
+				} {
+					dict[\keyNumFuncs][key].value(uv, mod);
+				};
 			};
 			uv.refresh;
 
 		}, active: false);
+
+		uv.keyDownAction.modes.put(\number, (on: \number, off: \code));
 	}
 
 	setUni { |normVal|
@@ -187,12 +181,65 @@ MView : JITView {
 		};
 	}
 
-	mouseDownNumber {
+	mouseDownNumber { |uv, x, y|
+		var xy = x@y;
+		var foundIndex;
 
+		if (this.checkNumber(value).not) {
+			"MView: value not number(s): %.\n".postf(value);
+			^this
+		};
+
+		dict[\mousexy] = xy;
+		dict[\normx] = x / dict[\width];
+		dict[\moveMode] = \noMove;
+
+		if (value.isKindOf(SimpleNumber)) {
+			dict[\moveMode] = \number;
+		} {
+			foundIndex = dict[\dots].detectIndex { |dot|
+				dot.dist(xy) < 6 };
+			dict[\moveMode] = \shiftRange; // default
+			dict[\foundIndex] = foundIndex; // index or nil
+
+			// find selected dot:
+			if (foundIndex.notNil) {
+				//	"foundIndex: %\n".postf(foundIndex);
+				dict[\moveMode] = \single;
+			} {
+				// no dot index found, so try borders
+				if (x.absdif(dict[\xvals].minItem) < 8) {
+					dict[\moveMode] = \scaleMin;
+				} {
+					if (x.absdif(dict[\xvals].maxItem) < 8) {
+						dict[\moveMode] = \scaleMax;
+					} {
+						if (x.inclusivelyBetween(
+							dict[\xvals].minItem,
+							dict[\xvals].maxItem)) {
+							dict[\moveMode] = \shiftRange;
+		}; }; }; } };
 	}
 
-	mouseMoveNumber {
-
+	mouseMoveNumber { |uv, x, y, mod|
+			var normX = (x / dict[\width]);
+			var xy = x@y;
+			(
+				\number: { this.setUni(normX).doAction },
+				\shiftRange: {
+					this.shiftRange(normX - dict[\normx], dict[\shiftMode]);
+				},
+				\scaleMin: { this.scaleMin(normX) },
+				\scaleMax: { this.scaleMax(normX) },
+				\single: {
+					this.setNormNumByIndex(dict[\foundIndex], normX);
+				}
+			)[dict[\moveMode]].value;
+			// cache these after doing the actions:
+			dict[\mousexy] = xy;
+			dict[\normx] = normX;
+			this.doAction;
+			this.refresh;
 	}
 
 	// methods when value is an array of numbers
@@ -233,79 +280,26 @@ MView : JITView {
 		value.put(index, dict[\myspec].map(normval));
 	}
 
+
 	makeMouseActions {
 		super.makeMouseActions;
 
-		uv.mouseDownAction.add(\number, { |uv, x, y|
-			var xy = x@y;
-			var foundIndex;
+		uv.mouseDownAction.modes.put(\number, (on: \number, off: \code));
+		uv.mouseMoveAction.modes.put(\number, (on: \number, off: \code));
+		uv.mouseUpAction.modes.put(\number, (on: \number, off: \code));
 
-			dict[\mousexy] = xy;
-			dict[\normx] = x / dict[\width];
-			dict[\moveMode] = \noMove;
-			// if (this.checkNumber.not) {
-			// 	"MView - value seems not to be a number.".postln;
-			// } {
+		uv.mouseDownAction.modes.put(\code, (on: \code, off: \number));
+		uv.mouseMoveAction.modes.put(\code, (on: \code, off: \number));
+		uv.mouseUpAction.modes.put(\code, (on: \code, off: \number));
 
-			if (value.isKindOf(SimpleNumber)) {
-				dict[\moveMode] = \number;
-			} {
-				foundIndex = dict[\dots].detectIndex { |dot|
-					dot.dist(xy) < 6 };
-				dict[\moveMode] = \shiftRange; // default
-				dict[\foundIndex] = foundIndex; // index or nil
-
-				// find selected dot:
-				if (foundIndex.notNil) {
-					//	"foundIndex: %\n".postf(foundIndex);
-					dict[\moveMode] = \single;
-				} {
-					// no dot index found, so try borders
-					if (x.absdif(dict[\xvals].minItem) < 8) {
-						dict[\moveMode] = \scaleMin;
-					} {
-						if (x.absdif(dict[\xvals].maxItem) < 8) {
-							dict[\moveMode] = \scaleMax;
-						} {
-							if (x.inclusivelyBetween(
-								dict[\xvals].minItem,
-								dict[\xvals].maxItem)) {
-								dict[\moveMode] = \shiftRange;
-			}; }; }; } };
-
-		// };
-
-				// dict[\moveMode].postcs;
+		uv.mouseDownAction.add(\number, { |uv, x, y, mod|
+			this.mouseDownNumber(uv, x, y, mod);
 		}, active: false);
 
-
 		uv.mouseMoveAction.add(\number, { |uv, x, y, mod|
-			var normX = (x / dict[\width]);
-			var xy = x@y;
-			(
-				\number: { this.setUni(normX).doAction },
-				\shiftRange: {
-					this.shiftRange(normX - dict[\normx], dict[\shiftMode]);
-				},
-				\scaleMin: { this.scaleMin(normX) },
-				\scaleMax: { this.scaleMax(normX) },
-				\single: {
-					this.setNormNumByIndex(dict[\foundIndex], normX);
-				}
-			)[dict[\moveMode]].value;
-			// cache these after doing the actions:
-			dict[\mousexy] = xy;
-			dict[\normx] = normX;
-			this.doAction;
-			this.refresh;
-		});
+		this.mouseMoveNumber(uv, x, y, mod);
+	});
 	}
 
-	number {
-		uv.drawFunc.enable(\number);
-		uv.keyDownAction.enable(\number).disable(\code);
-		uv.mouseDownAction.enable(\number);
-		uv.mouseMoveAction.enable(\number);
-		this.refresh;
-	}
+	number { this.mode_(\number).refresh; }
 }

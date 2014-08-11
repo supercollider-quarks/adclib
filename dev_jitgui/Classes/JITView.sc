@@ -19,7 +19,8 @@ unify with JITGui:
 * Copy/paste into/from MGui?
 * Drag from lang, drop to lang?
 
-* multi number - show selected index?
+* multi number
+- show whether selection is single index, left/right border, or entire area?
 * stop shifting at minval/maxval?
 
 // later:
@@ -33,8 +34,6 @@ unify with JITGui:
 * ChoiceSpec for eg env types, popup/listgui
 
 */
-
-
 
 JITView {
 	classvar <styleDict;
@@ -83,9 +82,15 @@ JITView {
 
 	mode { ^drawFunc.mode }
 
-	funcs { ^[uv.drawFunc, uv.keyDownAction, uv.mouseDownAction, uv.mouseMoveAction] }
+	funcs { ^[uv.drawFunc,
+		uv.keyDownAction,
+		uv.mouseDownAction,
+		uv.mouseMoveAction]
+	}
+
 	mode_ { |name|
 		this.funcs.do(_.mode_(name));
+		this.refresh;
 	}
 
 	//	mode_ { |val| this.putDict(\mode, val) }
@@ -103,7 +108,7 @@ JITView {
 	}
 	makeParent { |inparent, inname|
 		parent = inparent ?? {
-			inparent = Window("JITView", bounds).front;
+			inparent = Window(inname ? this.class.name, bounds).front;
 			// when in its own window, move to top left
 			bounds = bounds.moveTo(0,0);
 			inparent;
@@ -152,7 +157,7 @@ JITView {
 		^drawFont
 	}
 
-	drawValue {
+	drawValueAsCode {
 		var drawFont, roundedVal;
 		var currValStr, currVal = value;
 		if (value.isNil) { currValStr = "-" } {
@@ -210,7 +215,7 @@ JITView {
 
 		drawFunc.add(\prep, { this.prepDraw });
 		drawFunc.add(\label, { this.drawLabel });
-		drawFunc.add(\value, { this.drawValue });
+		drawFunc.add(\code, { this.drawValueAsCode });
 		drawFunc.add(\editStr, { this.drawEditStr });
 		drawFunc.add(\hilite, { this.drawHilite }, active: false);
 
@@ -253,8 +258,15 @@ JITView {
 		};
 	}
 
+	// basic keyDown first keyDown, like slider+numbox is now.
+
 	makeKeyDownActions {
 		uv.keyDownAction = MFunc.new;
+
+		// put this in for debugging?
+		// uv.keyDownAction.add(\post, { |uv, key, mod| [key, mod].postcs }, false);
+
+		dict[\keyDownAltFuncs] = ($c: { this.mode_(\code.postcs) });
 
 		dict[\keyDownFuncs] = ()
 		.put(8.asAscii,  { |uv, mod = 0| // backspace by one, shift to clear
@@ -271,10 +283,17 @@ JITView {
 			this.doEnter(uv, mod);
 		});
 
+		uv.keyDownAction.modes.put(\code, (on: \code));
+
 		uv.keyDownAction.add(\code, { |uv, key, mod|
 			var valStr = dict[\editStr] ? "";
 			// [key, mod].postcs;
-			var func = dict[\keyDownFuncs][key];
+			var func;
+			if (mod.isAlt) {
+				func = dict[\keyDownAltFuncs][key]
+			} {
+				func = dict[\keyDownFuncs][key]
+			};
 
 			uv.focus(true);
 
@@ -291,14 +310,7 @@ JITView {
 
 	putDict { |... pairs| dict.putPairs(pairs); }
 
-	// basic keyDown first keyDown, like slider+numbox is now.
-	code {
-		uv.drawFunc.disable(\number);
-		uv.keyDownAction.enable(\code).disable(\number);
-		uv.mouseDownAction.disable(\number);
-		uv.mouseMoveAction.disable(\number);
-		this.refresh;
-	}
+	code { this.mode_(\code).refresh; }
 
 	hilite { |hiLabel, hiColor|
 		dict[\hiLabel] = dict[\hiLabel] ? hiLabel;
@@ -312,8 +324,17 @@ JITView {
 	}
 
 	makeMouseActions {
-		uv.mouseDownAction = MFunc();
-		uv.mouseMoveAction = MFunc();
-		uv.mouseUpAction = MFunc();
+		uv.mouseDownAction = MFunc([\code, { "insert cursor...".postln }]);
+		uv.mouseMoveAction = MFunc([\code, { "select text range?".postln }]);
+		uv.mouseUpAction = MFunc([\code, {}]);
+		uv.mouseDownAction.modes.put(\code, ());
+		uv.mouseMoveAction.modes.put(\code, ());
+		uv.mouseUpAction.modes.put(\code, ());
+
+		dict[\mouseActions] = [
+			uv.mouseDownAction,
+			uv.mouseMoveAction,
+			uv.mouseUpAction];
+
 	}
 }

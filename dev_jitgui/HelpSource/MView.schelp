@@ -1,6 +1,6 @@
 TITLE:: MView
-summary:: A JITView for numbers
-categories:: Categories>JITLib
+summary:: a JITView for numbers
+categories:: Libraries>JITLib
 related:: Classes/JITView, Classes/MFunc
 
 DESCRIPTION::
@@ -9,116 +9,135 @@ MView will display numbers as sliders or multislider fields.
 Intended for guis which have to show very different objects at different times.
 
 code::
-(some example code)
+
+// make a JITView: value, parent, bounds
+m = MView(123, nil, Rect(10, Window.screenBounds.height - 100, 300, 40));
+// needs a spec to display proper number range
+m.putDict(\myspec, \freq.asSpec.copy.step_(0.01)).refresh;
+m.label_(\freq);
+
+// now set its mode:
+m.mode_(\number);
+m.mode_(\code);
+
+// \number mode works as follows:
+// value can be a single number, or an array of numbers.
+
+m.value_(30.0);
+m.value_([30, 300]);
+m.value_([30, 300, 3000]);
+
+m.action.add(\boing, { |mv| [\boing, mv.value].postcs });
+
+/* single number behavior:
+*	grabbing slider and moving it sets value and does action
+*	x sets to minval,
+	m to maxval,
+	c to center,
+	r to random value
+*/
+m.valueAction_(666);
+m.keyDown($a);
+
+
+// multi-number behavior:
+m.valueAction = [60, 600, 6000];
+
+/*
+*	one can change values in one of these modes:
+*	click-dragging onto a single dot moves just that number within in the array
+* 	click-dragging on the right margin area rescales values by maxval
+* 	click-dragging on the left margin area rescales values by minval
+* 	click-dragging anywhere else shifts range of entire array of values
+
+* key actions:
+	x = shift all vals so that minItem is minval
+	m = shift all vals so that maxItem becomes maxval
+	c = shift range so mean(minItem, maxItem) becomes center of range (norm 0.5)
+	r = move range of values as is by a random amount
+
+	X = set all vals to minval
+	M = set all vals to maxval
+	C = set all vals to center of range (norm. 0.5)
+	R = randomize all values
+
+*/
+//
+m.putDict(\shiftMode, \clip);
+m.putDict(\shiftMode, \stop);
+
+
+m.putDict(\knobCol, Color.grey(0.0, 0.3));
+
+
+*/
 ::
 
 CLASSMETHODS::
 
-METHOD:: initClass
-(describe method here)
-
-returns:: (describe returnvalue here)
-
+private:: initClass
 
 INSTANCEMETHODS::
 
-METHOD:: doEnter
-(describe method here)
+PRIVATE:: init
 
-ARGUMENT:: uv
-(describe argument here)
-
-ARGUMENT:: mod
-(describe argument here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: scaleMin
-(describe method here)
-
-ARGUMENT:: normVal
-(describe argument here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: scaleMax
-(describe method here)
-
-ARGUMENT:: normVal
-(describe argument here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: drawNumber
-(describe method here)
-
-returns:: (describe returnvalue here)
+PRIVATE:: makeKeyDownActions, makeMouseActions, makeDrawFunc
 
 METHOD:: number
-(describe method here)
+shortcut to switch to number mode
 
-returns:: (describe returnvalue here)
+METHOD:: doEnter
+run enterAction
 
-METHOD:: makeDrawFunc
-(describe method here)
-
-returns:: (describe returnvalue here)
+  ARGUMENT:: uv
+the user view
+  ARGUMENT:: mod
+any modifier keys held while activating
 
 METHOD:: getUni
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: mouseMoveNumber
-(describe method here)
-
-returns:: (describe returnvalue here)
+get current value, unmapped into unipolar range.
 
 METHOD:: setUni
-(describe method here)
-
-ARGUMENT:: normVal
-(describe argument here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: shiftRange
-(describe method here)
-
-ARGUMENT:: normDiff
-(describe argument here)
-
-ARGUMENT:: mode
-(describe argument here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: setNormNumByIndex
-(describe method here)
-
-ARGUMENT:: index
-(describe argument here)
-
-ARGUMENT:: normval
-(describe argument here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: makeMouseActions
-(describe method here)
-
-returns:: (describe returnvalue here)
-
-METHOD:: makeKeyDownActions
-(describe method here)
-
-returns:: (describe returnvalue here)
+set current value to unmapped unipolar value,
+using dict[\myspec] to map input value into spec range.
 
 METHOD:: mouseDownNumber
-(describe method here)
+the action performed on mouseDown - determines how value will be changed:
+if value is a single number, set value directly;
+if single point in array is clicked on, set that single value only;
+if left/right border is clicked, move that border and scale inner values;
+if clicked somewhere else in value block display, move all values.
 
-returns:: (describe returnvalue here)
+METHOD:: mouseMoveNumber
+changes value by one of the four methods set in mouseDownNumber.
 
+METHOD:: scaleMin
+scale all values in list by moving (normalized) minval
+
+METHOD:: scaleMax
+scale all values in list by moving (normalized) maxval
+
+METHOD:: setNormNumByIndex
+when value is an array of numbers, change value at index only.
+
+METHOD:: drawNumber
+the method that draws numerical display on the userview.
 
 EXAMPLES::
+
+code::
+Pdef(\test, Pbind(\dur, 0.25)).play;
+
+// try the different click-drag modes,
+// and try typing in different values
+m.action.add(\setPdef, { |mv| Pdef(\test).set(\freq, mv.value) });
+
+
+TODO:
+editStr action runs twice - why?
+switching back to code mode -
+why does value_(\symbol) get converted to minval of spec?
+
+::
+
 

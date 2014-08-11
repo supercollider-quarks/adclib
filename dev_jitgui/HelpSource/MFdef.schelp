@@ -25,6 +25,8 @@ MFdef(\m).value;
 // can't set an MFdef with new args after its creation for now;
 // maybe this should be supported later?
 MFdef(\m, []);
+
+
 ::
 
 
@@ -32,6 +34,9 @@ CLASSMETHODS::
 
 METHOD:: all
 the dictionary where all instances are kept by key.
+code::
+MFdef.all;
+::
 
 private:: initClass, new
 
