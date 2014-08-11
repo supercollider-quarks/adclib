@@ -1,0 +1,124 @@
+TITLE:: MView
+summary:: A JITView for numbers
+categories:: Categories>JITLib
+related:: Classes/JITView, Classes/MFunc
+
+DESCRIPTION::
+A view for displaying and editing objects in general und numbers in particular.
+MView will display numbers as sliders or multislider fields.
+Intended for guis which have to show very different objects at different times.
+
+code::
+(some example code)
+::
+
+CLASSMETHODS::
+
+METHOD:: initClass
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+
+INSTANCEMETHODS::
+
+METHOD:: doEnter
+(describe method here)
+
+ARGUMENT:: uv
+(describe argument here)
+
+ARGUMENT:: mod
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: scaleMin
+(describe method here)
+
+ARGUMENT:: normVal
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: scaleMax
+(describe method here)
+
+ARGUMENT:: normVal
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: drawNumber
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: number
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: makeDrawFunc
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: getUni
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: mouseMoveNumber
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: setUni
+(describe method here)
+
+ARGUMENT:: normVal
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: shiftRange
+(describe method here)
+
+ARGUMENT:: normDiff
+(describe argument here)
+
+ARGUMENT:: mode
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: setNormNumByIndex
+(describe method here)
+
+ARGUMENT:: index
+(describe argument here)
+
+ARGUMENT:: normval
+(describe argument here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: makeMouseActions
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: makeKeyDownActions
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+METHOD:: mouseDownNumber
+(describe method here)
+
+returns:: (describe returnvalue here)
+
+
+EXAMPLES::
+

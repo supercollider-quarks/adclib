@@ -1,0 +1,186 @@
+TITLE:: JITView
+summary:: a modal view to show any object.
+categories:: GUI, Libraries>JITLib>GUI
+related:: MView, JITGui
+
+DESCRIPTION::
+JITView can display an object as its source code,
+change it by code, and do an action with it.
+It uses a UserView to have configurable display
+and interaction modes.
+For flexible display of number(s), see its subclass MView.
+For modal guis for JIT-style objects, see MGui.
+
+
+code::
+// make a JITView: value, parent, bounds
+j = JITView(123, nil, Rect(10, 500, 300, 50)); // can enter new value
+// j.parent.bounds_(Rect(10, 500, 300, 50)); // crashes sclang! - why?
+j.dump;
+
+// much of its internals are in a dict
+j.dict;
+
+// set its label (on the top left);
+j.label_(\yo);
+j.label_(\yoyoYO);
+
+j.parent.name_("My JITView window");
+
+// set its value - can be anything
+j.value_(\symbol).refresh;
+j.value_(nil).refresh;
+j.value_( Pdefn(\abc, 123) );
+
+j.value_(30);
+// floats look like floats
+j.value_(30.0);
+j.value_([30, 300]);
+j.value_([30, 300, 3000]);
+
+
+// checkNumber is a utility used to determine
+// whether value is a roundable number
+j.checkNumber(12);
+j.checkNumber(nil);
+j.checkNumber([12, 12]);
+
+j.value_(10.123456); //default round is 0.0001
+j.putDict(\round, 0.01).refresh;
+j.putDict(\round, nil).refresh; //back to default 0.0001
+j.putDict(\round, 0).refresh; // no rounding at all
+
+j.action.add(\test, { |jv| "jv value is: %\n".postf(jv.value) })
+
+// hitting enter on the view does action, or this:
+j.doAction;
+
+/* BASIC display mode is 'code' */
+// no need to switch to other modes
+// still, should work with no complaints
+j.mode_(\code);
+
+// number mode only available in MView:
+// j.mode_(\number);
+
+
+/* in code mode, one can enter any valid bit of code as value,
+	and it will be shown as a compileString.
+	-> tab to display current value as editString
+	-> backspace to delete char,
+	-> shift-backspace to clear editString
+	-> return to try to enter:
+		if ok:
+			editStr becomes new value, doAction is called
+		if it does not compile, nothing happens
+			but a doAction on the previous value.
+*/
+
+// JITView can be hilited, e.g. to show its mapping to a controller
+j.hilite("sl1");
+j.nohilite;
+// customize hilite font and color
+j.putDict(\hiFontCol, Color.magenta(1.0, 0.6));
+j.putDict(\hiFont, Font("Inconsolata", 24));
+j.hilite("sl1");
+j.nohilite;
+
+::
+
+CLASSMETHODS::
+
+METHOD:: initClass
+prepare styleDict
+
+
+
+METHOD:: styleDict
+a dictionary with colors and fonts for display.
+it is parent to a local dict in a JITView, so many display params
+can be individually overwritten.
+code::
+JITView.styleDict.printAll;
+::
+
+METHOD:: new
+make a new JITView
+ARGUMENT:: parent
+a parent on which to display; if none is given, one is created.
+ARGUMENT:: bounds
+the bounds within which to display; if not given, bounds will be created.
+ARGUMENT:: options
+provision for display options, not used yet. 
+
+
+INSTANCEMETHODS::
+
+METHOD:: value
+get and set view's value, can be any object
+
+METHOD:: valueAction
+set view's value and do its action
+
+METHOD:: action
+the view's action, a modal MFunc.
+
+METHOD:: doAction
+evaluate the action.
+
+METHOD:: parent
+the parent view or window used for display. 
+
+METHOD:: bounds
+the bounds used for display
+
+METHOD:: dict
+a dict for various data useful for the display.
+
+METHOD:: putDict
+put things into dict by pairs of key, value, key value.
+
+METHOD:: uv
+the userview which handles display.
+
+METHOD:: doEnter
+evaluate the action from keys.
+
+
+METHOD:: drawFunc
+the drawFunc of the user view, an MFunc which handles all configurable aspects of display.
+
+METHOD:: prepDraw
+prepare general data for display
+
+METHOD:: drawLabel, drawValue, drawEditStr, drawHilite
+methods for drawing label, value and editStr.
+
+METHOD:: refresh
+redraw user view.
+
+
+METHOD:: hilite
+hilite a JITView with a label and a color
+
+METHOD:: nohilite
+
+METHOD:: funcs
+get all of uv's actions [drawFunc, keyDownAction, mouseDownAction, mouseMoveAction] 
+
+METHOD:: mode
+set and get the current mode. 
+modes must be present in the various action functions.
+
+PRIVATE:: init, makeParent, makeBounds, makeDrawFunc, adjustFont, makeViews
+PRIVATE:: makeMouseActions, makeKeyDownActions
+
+METHOD:: makeVals
+make n values with a function
+
+METHOD:: checkNumber
+check whether a possible next value is a number(s) or not.
+
+EXAMPLES::
+
+code::
+(some example code)
+::
