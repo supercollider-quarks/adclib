@@ -1,3 +1,15 @@
+/* TODO MView
+
+
+
+// later:
+* soft-switch between vertical or horizontal display of values?
+* support navig arrows for increment?
+
+* draw method for Knob? Concentric multiknobs?
+* draw method for XY, xys display?
+--- could be nice for MTP/Influx
+*/
 MView : JITView {
 
 	*initClass {
@@ -6,7 +18,10 @@ MView : JITView {
 			\indexCol: Color.grey(0.0, 0.5),
 			\indexFont: Font("Monaco", 12),
 			\round: 0.0001,
-			\shiftMode: \stop
+			\shiftMode: \stop,
+			\knobCol: Color.grey(0.0, 0.25),
+			\knobCCol: Color.grey(1.0, 0.25),
+			\ghostCol: Color.black
 		));
 	}
 
@@ -96,35 +111,103 @@ MView : JITView {
 
 		uv.keyDownAction.modes.put(\number, (on: \number, off: \code));
 	}
-
-	setUni { |normVal|
+	// paramName is needed for use with SoftSet,
+	// could be used for checking spec.
+	setUni { |paramName, normVal|
 		var spec;
 		if (normVal.isNil) { ^this };
 		spec = dict[\myspec].value.asSpec;
-		if (spec.notNil) { this.value_(spec.map(normVal)) };
+		if (spec.notNil) { this.value_(spec.map(normVal)); this.refresh };
 	}
 
 	getUni {
 		var spec = dict[\myspec].value.asSpec;
+		^if (spec.notNil and: { this.checkNum(value) > 0 }) { (spec.unmap(value)) };
+	}
 
-		^if (spec.notNil and: { this.checkNumber(value) }) { (spec.unmap(value)) };
+	get { ^value }
+	set { |val| this.value_(val) }
+
+	cannotDrawNumber {
+		"MView cannot display as number(s): %\n".postf(value);
+	}
+
+	drawGhost {
+		drawFunc.add(\ghost, { |uv|
+			var bounds = dict[\bounds];
+			var height = dict[\height], width = dict[\width];
+			var ghostPos = dict[\ghostPos];
+			var ghostLabel = dict[\ghostLabel];
+			var ghostBounds, ghostWidthHalf, xpos, centPt;
+
+			if (ghostPos.notNil) {
+				xpos = ghostPos * width;
+				centPt = xpos@(height*0.5);
+				Pen.color_(dict[\ghostCol]);
+				Pen.width_(1);
+				Pen.addRoundedRect(Rect.aboutPoint(centPt, 8, height*0.5 - 2), 5, 5);
+				Pen.addArc(centPt, 5, 0, 2pi);
+				Pen.stroke;
+			};
+
+			if (ghostLabel.notNil) {
+				Pen.color_(dict[\ghostCol]);
+				xpos ?? {
+					xpos = (0.25 * width);
+					centPt = xpos@(height*0.5);
+				};
+				ghostLabel = ghostLabel.asString;
+				ghostBounds = ghostLabel.bounds(dict[\hiFont]);
+				ghostWidthHalf = ghostBounds.width;
+				ghostBounds.left = xpos - ghostWidthHalf.clip(0, dict[\width]);
+				ghostLabel.drawCenteredIn(
+					Rect.aboutPoint(centPt, ghostWidthHalf, dict[\height] *0.5),
+				dict[\hiFont]);
+			};
+		});
 	}
 
 	drawNumber {
+		switch(this.checkNum,
+			1, {
+				^this.drawSingleNumber },
+			2, { ^this.drawMultiNumber },
+			0, { ^this.cannotDrawNumber }
+		);
+	}
 
-		var xvals, valsRect, dotStep, dots;
+	drawSingleNumber {
+
+		var normval = this.getUni;
+		var xval, dot, height;
+
+		normval = this.getUni;
+		if (normval.isNil) { ^this.cannotDrawNumber };
+
+		xval = normval * dict[\width];
+		height = dict[\height];
+		dot = xval@(height*0.5);
+
+		Pen.color_(dict[\knobCol]);
+		Pen.addRoundedRect(Rect(xval - 8, 2, 16, height - 4), 5, 5);
+		Pen.fill;
+
+		// paint dot
+		Pen.color_(dict[\knobCCol]);
+		Pen.width_(2);
+		Pen.addArc(dot, 6, 0, 2pi).fill;
+	}
+
+	drawMultiNumber {
+		var normvals, xvals, valsRect, dotStep, dots;
 		var leftEnd, rightEnd, rangeWidth, height;
 
-		if (this.checkNumber) {
-			// "JITView cannot display as number(s): ".post; value.postln;
-			^this
+		normvals = this.getUni;
+		if (normvals.isNil or: { normvals.isEmpty }) {
+			^this.cannotDrawNumber
 		};
 
-		try { xvals = this.getUni.asArray * dict[\width]; };
-		if (xvals.isNil or: { xvals.isEmpty }) {
-			// "JITView - cannot display as numbers:".post; value.postln;
-			^this
-		};
+		xvals = normvals * dict[\width];
 
 		leftEnd = xvals.minItem;
 		rightEnd = xvals.maxItem;
@@ -139,10 +222,11 @@ MView : JITView {
 		dict.put(\xvals, xvals);
 		dict.put(\dots, dots);
 
-		// paint range area
+		// paint range area as block
 		Pen.color_(dict[\knobCol]);
 		Pen.fillRect(valsRect);
 
+		// paint left and right bars
 		Pen.color_(dict[\knobCol]);
 		[leftEnd, rightEnd].do { |xpos|
 			Pen.addRoundedRect(
@@ -152,6 +236,7 @@ MView : JITView {
 		};
 		Pen.fill;
 
+		// paint horiz layer strips for the dots
 		dots.do { |dot, i|
 			if (i.even) {
 				Pen.fillRect(
@@ -160,7 +245,7 @@ MView : JITView {
 			};
 		};
 
-		// paint dots
+		// paint the dots
 		Pen.color_(dict[\knobCCol]);
 		Pen.width_(2);
 
@@ -172,9 +257,9 @@ MView : JITView {
 			Pen.addArc(dot, 6, 0, 2pi).fill;
 			if (dots.size > 1) {
 				Pen.stringAtPoint(i.asString, dot,
-					dict[\indexFont], dict[\indexCol]);
+				dict[\indexFont], dict[\indexCol]);
 			};
-			// lines are disabled for now
+			// lines between dots are off for now
 			// if (nextdot.notNil) {
 			// 	Pen.line(dot, nextdot).stroke;
 			// };
@@ -185,10 +270,7 @@ MView : JITView {
 		var xy = x@y;
 		var foundIndex;
 
-		if (this.checkNumber(value).not) {
-			"MView: value not number(s): %.\n".postf(value);
-			^this
-		};
+		if (this.checkNum < 1) { ^this.cannotDrawNumber };
 
 		dict[\mousexy] = xy;
 		dict[\normx] = x / dict[\width];
@@ -222,24 +304,25 @@ MView : JITView {
 	}
 
 	mouseMoveNumber { |uv, x, y, mod|
-			var normX = (x / dict[\width]);
-			var xy = x@y;
-			(
-				\number: { this.setUni(normX).doAction },
-				\shiftRange: {
-					this.shiftRange(normX - dict[\normx], dict[\shiftMode]);
-				},
-				\scaleMin: { this.scaleMin(normX) },
-				\scaleMax: { this.scaleMax(normX) },
-				\single: {
-					this.setNormNumByIndex(dict[\foundIndex], normX);
-				}
-			)[dict[\moveMode]].value;
-			// cache these after doing the actions:
-			dict[\mousexy] = xy;
-			dict[\normx] = normX;
-			this.doAction;
-			this.refresh;
+		var normX = (x / dict[\width]);
+		var xy = x@y;
+		// "mouseMove: % x: % y: % normval: % \n".postf(dict[\moveMode], x, y, normX);
+		(
+			\number: { this.setUni(nil, normX) },
+			\shiftRange: {
+				this.shiftRange(normX - dict[\normx], dict[\shiftMode]);
+			},
+			\scaleMin: { this.scaleMin(normX) },
+			\scaleMax: { this.scaleMax(normX) },
+			\single: {
+				this.setNormNumByIndex(dict[\foundIndex], normX);
+			}
+		)[dict[\moveMode]].value;
+		// cache these after doing the actions:
+		dict[\mousexy] = xy;
+		dict[\normx] = normX;
+		this.doAction;
+		this.refresh;
 	}
 
 	// methods when value is an array of numbers

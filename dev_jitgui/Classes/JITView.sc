@@ -1,35 +1,16 @@
 /* TODO:
 
-JITView:
-
-questions:
-
-unify with JITGui:
+*** unify with JITGui:
 * put into a zone with its own layout
 * make sure it works with direct placement, FlowLayout or new Layout schemes
 * know its own preferred size
 * know how to place itself in a Layout
 
-
-* rename to MView or MGui
 * flexify getVal function,
 * so PdefnGui can just have a changed function
-* shortcuts for mode change: alt-c, alt-n
 
 * Copy/paste into/from MGui?
 * Drag from lang, drop to lang?
-
-* multi number
-- show whether selection is single index, left/right border, or entire area?
-* stop shifting at minval/maxval?
-
-// later:
-* soft-switch between vertical or horizontal display of values?
-* support navig arrows for increment?
-
-* draw method for Knob? Concentric multiknobs?
-* draw method for XY, xys display?
---- could be nice for MTP/Influx
 
 * ChoiceSpec for eg env types, popup/listgui
 
@@ -49,8 +30,6 @@ JITView {
 			\labelCol: Color.blue(0.8, 0.7),
 			\valCol: Color.green(0.6, 0.8),
 			\editCol: Color.red(0.6, 0.6),
-			\knobCol: Color.grey(0.0, 0.25),
-			\knobCCol: Color.grey(1.0, 0.62),
 			\hiCol: Color.green(1.0, 0.21),
 			\hiFontCol: Color.magenta(1.0, 0.3),
 			\font: Font("Monaco", 16),
@@ -95,12 +74,17 @@ JITView {
 
 	//	mode_ { |val| this.putDict(\mode, val) }
 
-	refresh { uv.refresh }
+	refresh { defer { uv.refresh } }
 
 	doAction { action.value(this) }
 
-	checkNumber { |val|
-		^(val.notNil and: { val.asArray.every(_.isKindOf(SimpleNumber)) });
+	// should be in Object?
+	checkNum { |val|
+		if (val.isKindOf(Number)) { ^1 };
+		if (val.isKindOf(SequenceableCollection) and:
+			{ val.every(_.isKindOf(SimpleNumber)) })
+		{ ^2 };
+		^0; // not a numerically displayable value
 	}
 
 	makeBounds { |inbounds|
@@ -161,7 +145,7 @@ JITView {
 		var drawFont, roundedVal;
 		var currValStr, currVal = value;
 		if (value.isNil) { currValStr = "-" } {
-			if (this.checkNumber(value)) {
+			if (this.checkNum(value) > 0) {
 				currVal = value.round(dict[\round]);
 				// keep orig number(s) if rounding has no effect,
 				// so Integers remain Integers

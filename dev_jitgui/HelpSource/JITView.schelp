@@ -38,16 +38,18 @@ j.value_([30, 300]);
 j.value_([30, 300, 3000]);
 
 
-// checkNumber is a utility used to determine
-// whether value is a number or numbers (so it is roundable)
-j.checkNumber(12);
-j.checkNumber(nil);
-j.checkNumber([12, 12]); // true
+// checkNum is a utility used to determine whether a value object
+// is a number or numbers; in effect, whether it can be rounded:
+// 0 if not a number, 1 if a single number, 2 if array of all numbers.
+// (arrays of arrays of numbers not supported yet)
+j.checkNum(12);	 // -> 1, can round
+j.checkNum(nil); // -> 0
+j.checkNum([12, 12]); // -> 2, can round
 
 j.value_(10.123456); //default round is 0.0001
 j.putDict(\round, 0.01).refresh;
 j.putDict(\round, nil).refresh; //back to default 0.0001
-j.putDict(\round, 0).refresh; // no rounding at all
+j.putDict(\round, 0).refresh; // no rounding
 
 j.action.add(\test, { |jv| "jv value is: %\n".postf(jv.value) });
 
@@ -185,8 +187,12 @@ PRIVATE:: makeMouseActions, makeKeyDownActions
 METHOD:: makeVals
 make n values with a function
 
-METHOD:: checkNumber
-check whether a possible next value is a number(s) or not.
+METHOD:: checkNum
+check whether a possible next value is a number or numbers or not.
+
+RETURNS::
+0 if not a number, 1 if a single number, 2 if array of all numbers.
+
 
 EXAMPLES::
 
