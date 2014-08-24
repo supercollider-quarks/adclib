@@ -1,5 +1,16 @@
 /* TODO:
 
+// BUGS/glitches
+// 2 * FIX bug:
+// moving parent bounds creates an infinite loop
+// j.parent.bounds_(Rect(100, 100, 200, 100)); // endless spin
+// // only works like this:
+j.uv.drawingEnabled_(false);
+j.parent.bounds_(Rect(100, 100, 200, 100)); // no crash
+j.uv.drawingEnabled_(true);
+
+// 1 * click and arrow into editstring for easier editing
+
 *** unify with JITGui:
 * put into a zone with its own layout
 * make sure it works with direct placement, FlowLayout or new Layout schemes
@@ -297,8 +308,8 @@ JITView {
 	code { this.mode_(\code).refresh; }
 
 	hilite { |hiLabel, hiColor|
-		dict[\hiLabel] = dict[\hiLabel] ? hiLabel;
-		dict[\hiCol] = dict[\hiCol] ? hiColor;
+		dict[\hiLabel] = hiLabel ? dict[\hiLabel];
+		dict[\hiCol] = hiColor ? dict[\hiCol];
 		uv.drawFunc.enable(\hilite);
 		this.refresh;
 	}

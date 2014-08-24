@@ -1,6 +1,9 @@
 /* TODO MView
 
-
+TODO:
+editStr action runs twice - why?
+switching back to code mode -
+why does value_(\symbol) get converted to minval of spec?
 
 // later:
 * soft-switch between vertical or horizontal display of values?
@@ -41,7 +44,7 @@ MView : JITView {
 		var newVal = try { dict[\editStr].interpret };
 		if (newVal.notNil) {
 			var spec = dict[\myspec];
-			if (spec.notNil) {
+			if (spec.notNil and: { this.checkNum(newVal) > 0}) {
 				newVal = spec.constrain(newVal);
 			} {
 				"JITView - no spec for val, thus unconstrained: %\n"
@@ -58,21 +61,21 @@ MView : JITView {
 		super.makeKeyDownActions;
 		dict.put(\keyNumFuncs, (
 			$x: { |uv, mod| this.shiftRange(-1.0, \stop).doAction },
-			$X: { |uv, mod| this.setUni(this.makeVals(0.0)).doAction },
+			$X: { |uv, mod| this.setUni(nil, this.makeVals(0.0)).doAction },
 
 			$m: { |uv, mod| this.shiftRange(1.0, \stop).doAction },
-			$M: { |uv, mod| this.setUni(this.makeVals(1.0)).doAction },
+			$M: { |uv, mod| this.setUni(nil, this.makeVals(1.0)).doAction },
 
 			$c: { |uv, mod|
 				var currVals = this.getUni.asArray;
 				var currCenter = mean([currVals.minItem, currVals.maxItem]);
 				this.shiftRange(0.5 - currCenter, \stop).doAction },
-			$C: { |uv, mod| this.setUni(this.makeVals(0.5)).doAction },
+			$C: { |uv, mod| this.setUni(nil, this.makeVals(0.5)).doAction },
 
 			$r: { |uv, mod|
 				var currVals = this.getUni, jump;
 				if (currVals.size < 1) {
-					this.setUni(1.0.rand);
+					this.setUni(nil, 1.0.rand);
 				} {
 					jump = rrand(currVals.minItem.neg, 1-currVals.maxItem);
 					this.shiftRange(jump, \stop)
@@ -80,19 +83,19 @@ MView : JITView {
 				this.doAction
 			},
 			$R: { |uv, mod|
-				this.setUni(this.makeVals({ 1.0.rand; })).doAction
+				this.setUni(nil, this.makeVals({ 1.0.rand; })).doAction
 			}
 		));
 
 		// number mode with alt-n
-		dict[\keyDownAltFuncs].put($n, { |uv, key, mod|
+		dict[\keyDownAltFuncs].put($n, { |uv, key|
 			this.mode_(\number.postcs) });
 
 		dict[\keyNumFuncs].parent_(dict[\keyDownFuncs]);
 
 		// simple 1, 2 or more number(s), like slider+numbox is now.
 		uv.keyDownAction.add(\number, { |uv, key, mod|
-			// [key, mod].postcs;
+			mod = mod ? 0;
 			uv.focus(true);
 
 			if (mod.isAlt) {
@@ -168,7 +171,7 @@ MView : JITView {
 	}
 
 	drawNumber {
-		switch(this.checkNum,
+		switch(this.checkNum(value),
 			1, {
 				^this.drawSingleNumber },
 			2, { ^this.drawMultiNumber },
@@ -270,7 +273,7 @@ MView : JITView {
 		var xy = x@y;
 		var foundIndex;
 
-		if (this.checkNum < 1) { ^this.cannotDrawNumber };
+		if (this.checkNum(value) < 1) { ^this.cannotDrawNumber };
 
 		dict[\mousexy] = xy;
 		dict[\normx] = x / dict[\width];
@@ -330,7 +333,7 @@ MView : JITView {
 		var currVals = this.getUni;
 		var currmin = currVals.minItem;
 		var currmax = currVals.maxItem;
-		this.setUni(currVals.linlin(
+		this.setUni(nil, currVals.linlin(
 			currmin, currmax, normVal, currmax));
 	}
 
@@ -346,7 +349,7 @@ MView : JITView {
 		// modes can be \stop or \clip
 		var currVals = this.getUni;
 		if (currVals.size < 1) {
-			^this.setUni(currVals + normDiff)
+			^this.setUni(nil, currVals + normDiff)
 		};
 
 		if (mode == \stop) {
@@ -356,7 +359,7 @@ MView : JITView {
 				normDiff = max(normDiff, currVals.minItem.neg);
 			};
 		};
-		this.setUni(this.getUni + normDiff)
+		this.setUni(nil, this.getUni + normDiff)
 	}
 
 	setNormNumByIndex { |index, normval|

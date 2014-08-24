@@ -77,7 +77,7 @@ j.code;
 */
 
 // JITView can be hilited with a custom string and color,
-// e.g. to show a mapping to a controller
+// e.g. to show a mapping to a control source
 j.hilite("sl1");
 j.nohilite;
 // customize hilite font and color
@@ -85,16 +85,6 @@ j.putDict(\hiFontCol, Color.magenta(1.0, 0.6));
 j.putDict(\hiFont, Font("Inconsolata", 24));
 j.hilite("sl1");
 j.nohilite;
-
-// to do
-// 1 * click and arrow into editstring for easier editing
-// 2 * FIX bug:
-// moving parent bounds creates an infinite loop
-// j.parent.bounds_(Rect(100, 100, 200, 100)); // endless spin
-// // only works like this:
-j.uv.drawingEnabled_(false);
-j.parent.bounds_(Rect(100, 100, 200, 100)); // no crash
-j.uv.drawingEnabled_(true);
 
 ::
 
@@ -175,7 +165,7 @@ hilite a JITView with a label and a color
 METHOD:: nohilite
 
 METHOD:: funcs
-get all of uv's actions [drawFunc, keyDownAction, mouseDownAction, mouseMoveAction]
+get all of uv's actions in one array [drawFunc, keyDownAction, mouseDownAction, mouseMoveAction]
 
 METHOD:: mode
 set and get the current mode.
@@ -197,5 +187,6 @@ RETURNS::
 EXAMPLES::
 
 code::
-(some example code)
+// to follow - see also
+MView.openHelpFile
 ::

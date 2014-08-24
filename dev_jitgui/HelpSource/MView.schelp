@@ -19,10 +19,10 @@ m.label_(\freq);
 // now set its mode:
 m.mode_(\number);
 m.mode_(\code);
+m.mode_(\number);
 
 // \number mode works as follows:
 // value can be a single number, or an array of numbers.
-
 m.value_(30.0);
 m.value_([30, 300]);
 m.value_([30, 300, 3000]);
@@ -37,11 +37,16 @@ m.action.add(\boing, { |mv| [\boing, mv.value].postcs });
 	r to random value
 */
 m.valueAction_(666);
-m.keyDown($a);
+m.uv.keyDown($r);
+m.uv.keyDown($c);
 
 
 // multi-number behavior:
 m.valueAction = [60, 600, 6000];
+m.uv.keyDown($r);
+m.uv.keyDown($c);
+m.uv.keyDown($R);
+m.uv.keyDown($C);
 
 /*
 *	one can change values in one of these modes:
@@ -67,7 +72,7 @@ m.putDict(\shiftMode, \clip);
 m.putDict(\shiftMode, \stop);
 
 
-m.putDict(\knobCol, Color.grey(0.0, 0.3));
+m.putDict(\knobCol, Color.grey(0.0, 0.2));
 
 
 */
@@ -131,12 +136,6 @@ Pdef(\test, Pbind(\dur, 0.25)).play;
 // try the different click-drag modes,
 // and try typing in different values
 m.action.add(\setPdef, { |mv| Pdef(\test).set(\freq, mv.value) });
-
-
-TODO:
-editStr action runs twice - why?
-switching back to code mode -
-why does value_(\symbol) get converted to minval of spec?
 
 ::
 
