@@ -35,6 +35,7 @@ MView : JITView {
 	makeDrawFunc {
 		super.makeDrawFunc;
 		drawFunc.add(\number, { this.drawNumber }, active: false);
+		drawFunc.add(\ghost, { this.drawGhost }, active: false);
 		drawFunc.modes.put(\code, (on: \code, off: \number));
 		drawFunc.modes.put(\number, (on: [\number, \code]));
 	}

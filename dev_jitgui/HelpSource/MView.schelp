@@ -137,6 +137,85 @@ Pdef(\test, Pbind(\dur, 0.25)).play;
 // and try typing in different values
 m.action.add(\setPdef, { |mv| Pdef(\test).set(\freq, mv.value) });
 
+
+/* MView can show ghost values.
+	this is helpful when using controllers whose physical position
+	may differ from the param they are controlling.
+	(e.g. after switching presets, etc etc)
+*/
+
+(
+// make an MView
+m = MView(123, nil, Rect(10, Window.screenBounds.height - 100, 300, 40));
+m.putDict(\myspec, \freq.asSpec.copy.step_(0.01)).refresh;
+m.label_(\freq);
+m.action.add(\boing, { |mv| [\boing, mv.value].postcs });
+)
+
+// use MView to control an Ndef:
+
+// make an Ndef
+Ndef(\x, { VarSaw.ar(\freq.kr(100).lag(0.1) + [-0.1, 0.1]) * 0.2 }).play;
+// test setting directly:
+Ndef(\x).set(\freq, exprand(100, 500));
+// use MView to set Ndef freq param
+m.action.add(\set_x, { Ndef(\x).set(\freq, m.value.postln) });
+// make a skipjack to set MView to ndefs freq value
+z = SkipJack({ m.value = Ndef(\x).get(\freq); }, 0.1);
+
+// try setting Ndef freq -> mview gets updated
+Ndef(\x).set(\freq, exprand(100, 500));
+
+/*
+   When using a controller like a faderbox,
+   physical slider controls may be far away from the
+   current value of the process param they control.
+   In this case, one can use Softset to approach the proper
+   physical position and only take over control then.
+SoftSet.openHelpFile
+*/
+
+
+// use an EZSlider as a fake physical slider -
+// when used directly, it will introduce jumps:
+e = EZSlider(nil, nil, \slider1, \freq, { |sl| Ndef(\x).set(\freq, sl.value); });
+
+// better - use SoftSet to only take over when close enough
+e.action = { |sl| SoftSet(Ndef(\x), \freq, sl.value); };
+
+(
+// even better - use lastVals too, see SoftSet for explanations
+e.action = { |sl|
+	var lastFreq = e.getHalo(\lastFreq);
+	SoftSet(Ndef(\x), \freq, sl.value, lastVal: lastFreq);
+	e.addHalo(\lastFreq, sl.value);
+};
+)
+
+// would be nice to see the failing softsets value on the MView...
+
+	// enable ghost slider to appear, but nothing to show yet:
+m.drawFunc.enable(\ghost); m.refresh;
+	// show just the label
+m.putDict(\ghostLabel, 'sl1').refresh;
+	// label + ghost slider (value for ghostPos between 0.0 and 1.0)
+m.putDict(\ghostPos, 0.3).refresh;
+	// show just the slider
+m.putDict(\ghostLabel, nil).refresh;
+m.putDict(\ghostLabel, 'sl1').refresh;
+
+(
+// Now, show the sliders physical value on mview as ghost,
+// so as to know where to move to connect:
+
+e.action = { |sl|
+	var lastFreq = e.getHalo(\lastFreq);
+	m.putDict(\ghostPos, e.sliderView.value);
+	SoftSet(Ndef(\x), \freq, sl.value, lastVal: lastFreq);
+	e.addHalo(\lastFreq, sl.value);
+};
+)
+
 ::
 
 
