@@ -3,13 +3,13 @@ MFunc : AbstractFunction {
 
 	var <funcDict, <orderedNames, <modes, <mode;
 	var <activeNames, <activeFuncs, <activeIndices;
-	var <modeSets;
+	var <modeLists;
 
-	*new { |pairs, modes, initMode, modeSets|
-		^super.new.init(pairs, modes, initMode, modeSets);
+	*new { |pairs, modes, initMode, modeLists|
+		^super.new.init(pairs, modes, initMode, modeLists);
 	}
 
-	init { |pairs, argModes, argMode, argModeSets|
+	init { |pairs, argModes, argMode, argModeLists|
 		funcDict = ();
 		orderedNames = List[];
 		activeFuncs = List[];
@@ -19,8 +19,8 @@ MFunc : AbstractFunction {
 
 		modes = argModes ?? { () };
 		modes.put(\all, (on: { this.orderedNames }));
-		modeSets = argModeSets ?? {()};
-		modeSets.put(\all, { this.orderedNames });
+		modeLists = argModeLists ?? {()};
+		modeLists.put(\all, { this.orderedNames });
 		argMode = argMode ? \all;
 		this.mode_(argMode);
 	}
@@ -148,6 +148,23 @@ MFunc : AbstractFunction {
 		^activeFuncs.array.collect(_.value(*args));
 	}
 
+	makeExclusiveModes { |name, modeList, modeNames|
+		modeList = modeList ? modeLists[name];
+		if (modeList.notNil) {
+			modeLists.put(name, modeList);
+		} {
+			modeList = modeLists[name];
+			if (modeList.isNil) {
+				(thisMethod.asString + ": no mode named %.\n").postf(name);
+				^this
+			};
+		};
+		modeNames = modeNames ? modeList;
+		modeNames.do { |modeName, i|
+			modes.put(modeName, (on: modeList[i], off: name));
+		}
+	}
+
 	mode_ { |name|
 		var toDisable;
 		var newMode = modes[name];
@@ -157,7 +174,7 @@ MFunc : AbstractFunction {
 		};
 		mode = name;
 		toDisable = newMode[\off];
-		toDisable = modeSets[toDisable] ? toDisable;
+		toDisable = modeLists[toDisable] ? toDisable;
 		this.disable(toDisable.value).enable(newMode[\on].value);
 	}
 }

@@ -1,13 +1,6 @@
 /* TODO:
 
 // BUGS/glitches
-// 2 * FIX bug:
-// moving parent bounds creates an infinite loop
-// j.parent.bounds_(Rect(100, 100, 200, 100)); // endless spin
-// // only works like this:
-j.uv.drawingEnabled_(false);
-j.parent.bounds_(Rect(100, 100, 200, 100)); // no crash
-j.uv.drawingEnabled_(true);
 
 // 1 * click and arrow into editstring for easier editing
 
@@ -214,8 +207,10 @@ JITView {
 		drawFunc.add(\editStr, { this.drawEditStr });
 		drawFunc.add(\hilite, { this.drawHilite }, active: false);
 
-		// used in MView, better declare here
+		// overwrite these in subclasses,
+		// so name-only mode turns off code display, etc.
 		drawFunc.modes.put(\code, (on: \code));
+		drawFunc.modes.put(\nameOnly, (on: \label, off: \code));
 	}
 
 
@@ -319,17 +314,20 @@ JITView {
 	}
 
 	makeMouseActions {
-		uv.mouseDownAction = MFunc([\code, { "insert cursor...".postln }]);
-		uv.mouseMoveAction = MFunc([\code, { "select text range?".postln }]);
-		uv.mouseUpAction = MFunc([\code, {}]);
-		uv.mouseDownAction.modes.put(\code, ());
-		uv.mouseMoveAction.modes.put(\code, ());
-		uv.mouseUpAction.modes.put(\code, ());
+		// prepare basic mouse actions
+		uv.mouseDownAction = MFunc([\code, { "...insert cursor".postln }]);
+		uv.mouseMoveAction = MFunc([\code, { "...text range".postln }]);
+		uv.mouseUpAction = MFunc([\code, { }]);
 
-		dict[\mouseActions] = [
-			uv.mouseDownAction,
-			uv.mouseMoveAction,
-			uv.mouseUpAction];
+		uv.mouseDownAction.modes.put(\code, (on: \code));
+		uv.mouseDownAction.modes.put(\nameOnly, (off: \code));
+
+		uv.mouseMoveAction.modes.put(\code, (on: \code));
+		uv.mouseMoveAction.modes.put(\nameOnly, (off: \code));
+
+		uv.mouseUpAction.modes.put(\code, (on: \code));
+		uv.mouseUpAction.modes.put(\nameOnly, (off: \code));
 
 	}
 }
+

@@ -1,18 +1,27 @@
 /* TODO MView
 
-TODO:
-editStr action runs twice - why?
-switching back to code mode -
-why does value_(\symbol) get converted to minval of spec?
+// 1. editStr action runs twice - why?
+x = 0;
+j = JITView(123);
+// now type "x = x + 1" // -> 2
+
+// 2. Window resize by code loops when userview with drawfunc is present.
+m = MView(123);
+m.drawFunc.disable(\all);
+m.parent.bounds_(Rect(100, 100, 150, 24)); // crash
+m.parent.bounds_(m.parent.bounds.moveTo(100, 100)); // fine, no resize
 
 // later:
+
 * soft-switch between vertical or horizontal display of values?
 * support navig arrows for increment?
 
 * draw method for Knob? Concentric multiknobs?
 * draw method for XY, xys display?
 --- could be nice for MTP/Influx
+
 */
+
 MView : JITView {
 
 	*initClass {

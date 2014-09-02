@@ -1,7 +1,7 @@
 TITLE:: MFunc
 summary:: MFunc is a proxy for multiple, modal functions.
 categories:: Modality
-related:: Classes/MFdef
+related:: Classes/MFdef, Classes/JITView
 
 DESCRIPTION::
 MFunc is a proxy for multiple, modal functions which can replace a single function with easily configurable flexible behavior.
@@ -82,19 +82,23 @@ m.addFirst(\record, { |sl| "fake rec/log: ['test', %]\n".postf(sl.value.round(0.
 // or could be sent via network
 m.addFirst(\netSend, { |sl| "fake netSend/broadcast: [\sl1, %]\n".postf(sl.value.round(0.001)) });
 
-// prepare for modal use with modeSets:
+// prepare for modal use with modeLists:
 
-// define the three set functions as a modeset.
+// define the three set functions as a modeList.
 // this can be used for mutually turning the others off,
-m.modeSets.put(\abc_exc, [\set_a, \set_b, \set_c]);
+m.modeLists.put(\abc, [\set_a, \set_b, \set_c]);
 
-// like this:
-m.modes.put(\a_only, (on: \set_a, off: \abc_exc));
-m.modes.put(\b_only, (on: \set_b, off: \abc_exc));
-m.modes.put(\c_only, (on: \set_c, off: \abc_exc));
+// like this by hand:
+m.modes.put(\a_only, (on: \set_a, off: \abc));
+m.modes.put(\b_only, (on: \set_b, off: \abc));
+m.modes.put(\c_only, (on: \set_c, off: \abc));
+
+// or use the shorthand method for it:
+m.makeExclusiveModes(\abc_exc, [\set_a, \set_b, \set_c]);
+
 
 // prepare a polyphonic mode too, where a b and c are controlled
-m.modes.put(\abc, (on: [\set_a, \set_b, \set_c]));
+m.modes.put(\abc, (on: \abc_exc));
 
 // now switch betwee single control destinations ...
 m.mode_(\a_only);
@@ -126,7 +130,7 @@ m = MFunc([
 		bob: (on: \bob, off: \triplet)
 	),
 	initMode: \ada,
-	modeSets: (\triplet: [\ada, \bob, \ede])
+	modeLists: (\triplet: [\ada, \bob, \ede])
 )
 )
 ::
@@ -144,8 +148,8 @@ set currently active mode by name.
 METHOD:: modes
 the available modes
 
-METHOD:: modeSets
-the modeSets
+METHOD:: modeLists
+the modeLists
 
 METHOD:: funcDict
 the repertoire of all functions
@@ -294,18 +298,25 @@ m.activeNames;
 m.value;
 
 // define a set of mutually exclusive functions
-m.modeSets.put(\triplet, [\ada, \bob, \dada]);
-
-
+m.modeLists.put(\triplet, [\ada, \bob, \dada]);
+// and exclusive modes
 m.modes.put(\ada3, (on: \ada, off: \triplet));
 m.modes.put(\bob3, (on: \bob, off: \triplet));
 m.modes.put(\dada3, (on: \dada, off: \triplet));
+
+// or do the same thing in short:
+
+m.makeExclusiveModes(
+	\triplet, // name of exclusive List
+	[\ada, \bob, \dada],  // names of the funcs
+	[\ada3, \bob3, \dada3]); // names of the modes if different from the funcs
+
+// see which funcs are on in which mode
+
 m.mode_(\all).activeNames;
 m.mode_(\ada3).activeNames;
 m.mode_(\bob3).activeNames;
 m.mode_(\dada3).activeNames;
-
-
 
 
 
@@ -328,3 +339,4 @@ MFdef(\m).value;
 // maybe this should be supported later?
 MFdef(\m, []);
 ::
+

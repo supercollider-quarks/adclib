@@ -1,8 +1,8 @@
 TITLE:: JITView
 summary:: a modal view to show any object.
 categories:: GUI, Libraries>JITLib>GUI
-related:: MView, JITGui
-
+related:: Classes/MView, Classes/JITGui
+Ndef
 DESCRIPTION::
 JITView can display an object as its source code,
 change it by code, and do multiple actions with it.
@@ -189,4 +189,10 @@ EXAMPLES::
 code::
 // to follow - see also
 MView.openHelpFile
+
+// switch to a mode that only displays label,
+// i.e. no code string, no editing
+j.mode_(\nameOnly);
+j.mode_(\code);
+
 ::
