@@ -52,8 +52,9 @@ MView : JITView {
 	doEnter { |uv, mod = 0|
 		// overrides return in keyDownFuncs
 		var newVal = try { dict[\editStr].interpret };
+		var spec;
 		if (newVal.notNil) {
-			var spec = dict[\myspec];
+			spec = dict[\myspec];
 			if (spec.notNil and: { this.checkNum(newVal) > 0}) {
 				newVal = spec.constrain(newVal);
 			} {
