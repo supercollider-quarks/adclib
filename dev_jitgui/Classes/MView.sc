@@ -10,6 +10,8 @@ m = MView(123);
 m.drawFunc.disable(\all);
 m.parent.bounds_(Rect(100, 100, 150, 24)); // crash
 m.parent.bounds_(m.parent.bounds.moveTo(100, 100)); // fine, no resize
+m.value_([1, 2, 3] / 4);
+m.dict.myspec = [0,100].asSpec;
 
 // later:
 
