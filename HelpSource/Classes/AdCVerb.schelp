@@ -1,7 +1,7 @@
 TITLE:: AdCVerb
 SUMMARY:: basic reverb based on Schroeder and Moorer-Loy
 CATEGORIES:: UGens
-RELATED:: DelayN, CombL, AllPassN
+RELATED:: Classes/DelayN, Classes/CombL, Classes/AllPassN
 
 DESCRIPTION::
 AdCVerb is a bank of comb filters going through a bank of allpass filters, with optional predelay. Basic input filtering is provided (high rolloff, DC removal), and it is easy and efficient to use for multichannel systems.
