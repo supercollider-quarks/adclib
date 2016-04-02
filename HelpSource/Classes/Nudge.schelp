@@ -38,10 +38,12 @@ n.nudge(0.1);
 fork { loop { 0.1.wait; n.nudge(0.03); } };
 
 n.useWrap; // wrap at borders
-n.useFold; // fold at borders by inverting nudge direction
 n.useClip; // or clip at borders
-n.useFold; // fold at borders by inverting nudge direction
+n.useFold; // default - fold at borders by inverting nudge direction
 
+
+
+// Shaping the nudge steps inside range:
 
 // sine shaping - nudge is linear in center, small near borders
 n.useSin;
@@ -56,7 +58,6 @@ n.useTan(5);
 // FIXME: this does not quite reach borders - max ca. 0.16 - 0.84
 n.useBipow(2);
 n.useBipow(0.5);
-
 
 
 // TODO:

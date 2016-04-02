@@ -9,10 +9,10 @@ Nudge {
 		state = (dir: 1, border: 1.0);
 		getFunc = { |obj, key| obj.getUni(key) };
 		setFunc = { |obj, key, val| obj.setUni(key, val) };
-		map2BiFunc = { |val| val.unibi };
 		nudgeFunc = { |val, delta| (val + (delta * state[\dir])) };
-		borderFunc = { |val| val.clip2(state[\border]) };
-		unmapFunc = { |val| val.biuni };
+
+		this.useLin;
+		this.useFold;
 	}
 
 	nudge { |delta|
@@ -40,13 +40,12 @@ Nudge {
 		};
 	}
 
-	// wrong
-	// useAtan { |drive = 5|
-	// 	state[\tanGain] = drive;
-	// 	state[\border] = drive.atan;
-	// 	map2BiFunc = { |val| (val.unibi * state[\tanGain]).atan };
-	// 	unmapFunc = { |val| (val.tan / state[\border]).biuni };
-	// }
+	useLin {
+		state[\border] = 1.0;
+		map2BiFunc = { |val| val.unibi };
+		borderFunc = { |val| val.clip2(state[\border]) };
+		unmapFunc = { |val| val.biuni };
+	}
 
 	useTan { |drive = 5|
 		state[\border] = drive.atan;
@@ -69,4 +68,13 @@ Nudge {
 		map2BiFunc = { |val| val.unibi.bipow(state[\exp]) };
 		unmapFunc = { |val| val.bipow(state[\exp].reciprocal).biuni };
 	}
+
+		// FIXME
+	// useAtan { |drive = 5|
+	// 	state[\tanGain] = drive;
+	// 	state[\border] = drive.atan;
+	// 	map2BiFunc = { |val| (val.unibi * state[\tanGain]).atan };
+	// 	unmapFunc = { |val| (val.tan / state[\border]).biuni };
+	// }
+
 }
