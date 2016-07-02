@@ -57,7 +57,7 @@ Class.allClasses.reject(_.isMetaClass).choose.makeHelp;
 		++"categories::"+cats.join(", ")
 		++"\nrelated:: Classes/SomeRelatedClass, Reference/SomeRelatedStuff\n\n"
 		++"DESCRIPTION::\n_put_long_description_here_\n\n"
-		++ "\n:: First code examples: \n\ncode::\n_some_example_code_\n::\n"
+		++ "\nFirst code examples: \n\ncode::\n_some_example_code_\n::\n"
 		++ f.(true) ++ f.(false)
 		++"\nEXAMPLES::\n\ncode::\n_some_example_code_\n::\n";
 	}
