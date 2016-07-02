@@ -1,4 +1,6 @@
 /*
+Overwrite template for help files with less cluttered version.
+// test:
 Class.allClasses.reject(_.isMetaClass).choose.makeHelp;
 */
 
