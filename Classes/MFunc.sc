@@ -4,6 +4,7 @@ MFunc : AbstractFunction {
 	var <funcDict, <orderedNames, <modes, <mode;
 	var <activeNames, <activeFuncs, <activeIndices;
 	var <modeLists;
+	var <>useTry = false;
 
 	*new { |pairs, modes, initMode, modeLists|
 		^super.new.init(pairs, modes, initMode, modeLists);
@@ -145,7 +146,20 @@ MFunc : AbstractFunction {
 	}
 
 	value { |...args|
+		if (useTry) { ^this.tryValue(*args) };
 		^activeFuncs.array.collect(_.value(*args));
+	}
+
+	tryValue { |...args|
+		^activeFuncs.array.collect { |func, i|
+			try {
+				func.value(*args)
+			} {
+				"% : .value failed at %: %\n"
+				.postf(this, activeNames[i].cs, func.cs);
+				'__failed__'
+			}
+		};
 	}
 
 	makeExclusiveModes { |name, modeList, modeNames|
