@@ -145,6 +145,8 @@ MFunc : AbstractFunction {
 		}
 	}
 
+	at { |key| ^funcDict[key] }
+
 	value { |...args|
 		if (useTry) { ^this.tryValue(*args) };
 		^activeFuncs.array.collect(_.value(*args));
@@ -157,6 +159,23 @@ MFunc : AbstractFunction {
 			} {
 				"% : .value failed at %: %\n"
 				.postf(this, activeNames[i].cs, func.cs);
+				'__failed__'
+			}
+		};
+	}
+
+	valueAt { |keys ... args|
+		if (useTry) { ^this.tryValueAt(*args) };
+		^keys.collect { |key| funcDict.at(key).value(*args) };
+	}
+
+	tryValueAt { |keys ... args|
+		^keys.collect { |key|
+			try {
+				funcDict.at(key).value(*args)
+			} {
+				"% : .value failed at %: %\n"
+				.postf(this, key, funcDict.at(key));
 				'__failed__'
 			}
 		};
