@@ -1,7 +1,7 @@
 TITLE:: Safety
 summary:: protect users from risky sound signals
 categories:: Utilities
-related:: Classes/BadValues, Classes/Server
+related:: Classes/ReplaceBadValues, Classes/Server
 
 DESCRIPTION::
 Safety protects users from risky sound signals in two respects:
@@ -28,7 +28,7 @@ CmdPeriod.run;
 
 // -> also posts Safety('localhost') etc
 
-// disable Safety if you like, and re-init server:
+// disable Safety if desired:
 Safety(s).disable;
 s.queryAllNodes; // gone
 CmdPeriod.run; // -> no post after  cmd-.
@@ -137,3 +137,4 @@ Safety(s).synth.set(\limit, 0.5); // set limit lower
 x.set(\amp, 5); // gets limited at 0.5;
 x.set(\amp, 0.5); // fine again
 
+::
