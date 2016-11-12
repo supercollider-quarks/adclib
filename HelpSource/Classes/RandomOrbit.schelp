@@ -1,12 +1,13 @@
 TITLE:: RandomOrbit
 summary:: generate series of repeatable and reversible random decisions
 categories:: Control, MetaControl
-related:: Classes/Influx, Overviews/JITLib
+related:: Overviews/JITLib
 
 DESCRIPTION::
 RandomOrbit allows generating series of repeatable and reversible random decisions by controlling the seeding of the random generator used.
 Moving the seed number up and down by the same steps will create the same results again, and having a sign. Its default function is intended for  also reversing decisions by scaling and inverting the resulting list of bipolar number values.
 RandomOrbit is a concept by Hannes Hoelzl; implementation started by adc.
+Combines well with the Influx class (in the Influx Quark).
 
 First code examples:
 
