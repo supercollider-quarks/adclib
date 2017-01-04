@@ -19,7 +19,7 @@ Peuclid : Pattern {
 			if (numBeatVal.notNil and: numHitVal.notNil) {
 				// cant have more hits than beats
 				numHitVal = min(numBeatVal, numHitVal);
-				increment = (numHitVal / numBeatVal).postln;
+				increment = (numHitVal / numBeatVal);
 
 				numBeatVal.do { arg i;
 					var isHit;
