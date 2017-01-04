@@ -24,7 +24,7 @@ Peuclid : Pattern {
 				numBeatVal.do { arg i;
 					var isHit;
 					isHit = (currval - lastval).round(1e-10) >= 1;
-					[currval, lastval, isHit].postln;
+					// [currval, lastval, isHit].postln;
 					if (isHit) { lastval = currval.round(1e-10).trunc };
 					inval = isHit.binaryValue.embedInStream(inval);
 					currval = (currval + increment);
