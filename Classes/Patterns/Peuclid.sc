@@ -19,12 +19,12 @@ Peuclid : Pattern {
 			if (numBeatVal.notNil and: numHitVal.notNil) {
 				// cant have more hits than beats
 				numHitVal = min(numBeatVal, numHitVal);
-				increment = (numHitVal / numBeatVal).postln;
+				increment = (numHitVal / numBeatVal);
 
 				numBeatVal.do { arg i;
 					var isHit;
 					isHit = (currval - lastval).round(1e-10) >= 1;
-					[currval, lastval, isHit].postln;
+					// [currval, lastval, isHit].postln;
 					if (isHit) { lastval = currval.round(1e-10).trunc };
 					inval = isHit.binaryValue.embedInStream(inval);
 					currval = (currval + increment);
