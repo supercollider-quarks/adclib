@@ -1,6 +1,6 @@
 TITLE:: WatchList
 summary:: a dynamic list of items.
-categories:: Classes
+categories:: Collections
 related:: Classes/List, Classes/ProxySpace, Classes/Ndef, Overviews/JITLib
 
 DESCRIPTION::
