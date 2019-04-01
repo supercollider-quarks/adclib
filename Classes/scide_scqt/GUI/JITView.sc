@@ -48,6 +48,8 @@ JITView {
 		^super.new.init(value, parent, bounds, options);
 	}
 
+	asView { ^uv }
+
 	init { |invalue, inparent, inbounds, inoptions|
 		dict = ().parent_(styleDict);
 		action = MFunc();
