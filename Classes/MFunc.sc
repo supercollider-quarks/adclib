@@ -230,4 +230,8 @@ MFdef : MFunc {
 	}
 
 	prKey { |argKey| key = argKey; all.put(key, this); }
+
+	storeArgs { ^[key] }
+
+	printOn { |stream| ^this.storeOn(stream) }
 }
