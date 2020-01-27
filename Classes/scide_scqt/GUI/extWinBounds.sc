@@ -15,6 +15,8 @@ Window.findAll(\c).do(_.front);
 Window.findAll(\c).do(_.moveTo(800.rand, 800.rand));
 Window.setAll(~locs, true);
 
+Window.getAllCS;
+
 */
 
 + Window {
@@ -31,6 +33,14 @@ Window.setAll(~locs, true);
 	*getAll {
 		^Window.allWindows.collect { |win| [win.name, win.bounds] };
 	}
+
+	*getAllCS {
+		var prettyCS = Window.getAll.cs
+		.replace("[ [", "[\n\t[")
+		.replace("], [", "],\n\t[");
+		^("Window.setAll(" ++ prettyCS ++ ");")
+	}
+
 	*setAll { |pairs, toFront = false|
 		pairs.do { |pair|
 
