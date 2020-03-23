@@ -30,6 +30,12 @@ Window.getAllCS;
 		^Window.allWindows.select { |w| w.name.contains(name) };
 	}
 
+	*show { |name|
+		var found = Window.find(name);
+		found !? { defer { found.front } };
+		^found
+	}
+
 	*getAll {
 		^Window.allWindows.collect { |win| [win.name, win.bounds] };
 	}
