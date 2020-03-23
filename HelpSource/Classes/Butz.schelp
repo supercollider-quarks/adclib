@@ -6,11 +6,15 @@ related:: Classes/NamedList
 DESCRIPTION::
 
 Butz has a named list of actions, which it shows on a GUI as buttons.
-This is useful for activating multiple instruments and their GUIs,
-and any utility functions - metering, custom scopes, sanity checks
-for parts of the setup etc etc.
+This is useful for opening multiple guis only when needed,
+such as several instruments and their GUIs,
+opening utilities like meters, custom scopes, mixers,
+guis for tests for setup parts (speakers), etc etc.
 
-It is a class-only singleton by design choice.
+It shows the actions as buttons with given style,
+and updates dynamically when items are added.
+
+Butz is a class-only singleton by design choice.
 
 First code examples:
 
@@ -109,7 +113,3 @@ set the button at index to show the name stored at that index
 
 METHOD:: updateButtons
 update the buttons
-
-
-
-
