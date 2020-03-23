@@ -1,8 +1,18 @@
 /*
 
+// These extensions are used in WinBounds,
+see examples in:
+WinBounds.help;
+
+// find and show window;
+// also get and set their bounds - now better with WinBounds
+
+
+// make 3 windows
 ~names = [\abc, \bcd, \cde];
 ~names.do {|name| Window(name).front };
 
+// find them by name or partial name
 Window.find(\a).front
 Window.findAll(\b)
 Window.findAll(\c)
@@ -11,6 +21,7 @@ Window.find(\a).moveTo(200).front;
 Window.find(\bcd).moveTo(200, 200).front;
 Window.findAll(\c).do(_.front);
 
+// restore
 ~locs = Window.getAll.postcs;
 Window.findAll(\c).do(_.moveTo(800.rand, 800.rand));
 Window.setAll(~locs, true);
@@ -51,7 +62,6 @@ Window.getAllCS;
 		pairs.do { |pair|
 
 			var win = Window.allWindows.detect { |w| w.name == pair[0] };
-			pair.postcs;
 
 			if (win.notNil) {
 				win.bounds = pair[1];
