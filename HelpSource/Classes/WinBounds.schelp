@@ -1,0 +1,120 @@
+TITLE:: WinBounds
+summary:: a class that stores and restores window bounds
+categories:: GUI
+related:: Classes/Window
+
+DESCRIPTION::
+WinBounds allows easy storing of window bounds in order to simplify designing and using multi-window guis.
+WinBounds is a class-only singleton.
+
+First code examples:
+
+code::
+
+// make 3 windows
+Window.closeAll;
+~names = [\abc, \bcd, \cde];
+~names.do {|name, i| Window(name, Rect(20, i + 3 * 100, 180, 80)).front };
+
+// store their current positions
+WinBounds.storeAll;
+// ... they are here now:
+WinBounds.stored;
+
+Document("WinBounds_stored.scd", "// save?\n" ++ WinBounds.saveString);
+
+// jumble
+Window.allWindows.do(_.bounds_(Rect(800.rand, 800.rand, 300, 300)));
+// restore one
+WinBounds.restore("abc"); // restore one window by name
+WinBounds.restoreAll;     // restore all of them
+
+/// save current storeed bounds as code:
+
+WinBounds.saveString; // posts this:
+WinBounds.stored.putAll( (
+	'cde': Rect(20.0, 500.0, 180.0, 80.0),
+	'abc': Rect(20.0, 300.0, 180.0, 80.0),
+	'bcd': Rect(20.0, 400.0, 180.0, 80.0)
+) );
+
+// try to re-enter them from saveString:
+WinBounds.stored.clear;
+WinBounds.stored.putAll( (
+	'cde': Rect(20.0, 500.0, 180.0, 80.0),
+	'abc': Rect(20.0, 300.0, 180.0, 80.0),
+	'bcd': Rect(20.0, 400.0, 180.0, 80.0)
+) );
+
+// jumble
+Window.allWindows.do(_.bounds_(Rect(800.rand, 800.rand, 400.rand, 400.rand)));
+// should restore all 3
+WinBounds.restoreAll;
+
+::
+
+WinBounds uses some extensions to the Window class :
+code::
+Window.find(\abc).do(_.front);
+Window.find(\nopey).do(_.front);
+Window.find(\c).do(_.front);
+Window.findAll(\b).do(_.background_(Color.rand));
+
+Window.find(\a).moveTo(200).front;
+Window.find(\bcd).moveTo(200, 200).front;
+Window.findAll(\c).do(_.front);
+
+~locs = Window.getAll.postcs;
+Window.findAll(\c).do(_.moveTo(800.rand, 800.rand));
+Window.setAll(~locs, true);
+
+Window.getAllCS;
+
+Window("test").front;
+Window.show("test").notNil;
+*/
+::
+
+CLASSMETHODS::
+
+private:: initClass
+
+METHOD:: stored
+a dict with all stored bounds for windows.
+window names must be unique!
+
+METHOD:: put
+put in bounds rect by window name
+
+METHOD:: at
+argument:: key
+get bounds rect for key
+
+
+METHOD:: storeAll
+store bounds of all currently open windows
+
+METHOD:: restoreAll
+restore all open windows to their stored bounds.
+
+METHOD:: saveString
+returns a code string that recreates stored bounds.
+
+METHOD:: putAll
+add a collection - a dict or keys-values-array - to stored dict.
+
+METHOD:: store
+store bounds rect of a currently open window by window name.
+METHOD:: storeWin
+store bounds rect of a currently open window
+
+METHOD:: restoreWin
+argument:: win
+restore bounds rect of a currently open windo.
+
+METHOD:: restore
+argument:: name
+restore bounds rect of a currently open window by window name.
+
+
+
