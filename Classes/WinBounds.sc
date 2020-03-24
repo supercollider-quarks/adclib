@@ -1,14 +1,32 @@
 
 WinBounds {
 	classvar <stored;
+	classvar <makeFuncs;
 
 	*initClass {
 		stored = ();
+		makeFuncs = ();
 	}
 
 	*storeAll { Window.allWindows.do(this.storeWin(_)) }
 
 	*restoreAll { Window.allWindows.do(this.restoreWin(_)) }
+
+	*addMake { |name, func| makeFuncs.put(name, func) }
+	*make { |name| ^makeFuncs[name].value(name) }
+
+	*showOrMake { |name, restore = true, finishFunc|
+		var win = Window.find(name = name.asSymbol);
+
+		if (win.isNil or: { win.isClosed }) {
+			win = WinBounds.make(name);
+		};
+		if (restore) {
+			WinBounds.restoreWin(win)
+		};
+		win.front;
+		finishFunc.value(win);
+	}
 
 	*saveString {
 		var storedStr = WinBounds.stored.cs

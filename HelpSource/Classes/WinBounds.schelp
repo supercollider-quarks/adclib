@@ -50,6 +50,34 @@ WinBounds.stored.putAll( (
 Window.allWindows.do(_.bounds_(Rect(800.rand, 800.rand, 400.rand, 400.rand)));
 // should restore all 3
 WinBounds.restoreAll;
+::
+WinBounds can also be use to store window-making functions,
+
+code::
+// store a makeFunc
+WinBounds.addMake(\WinBounds_Test, { Window("WinBounds_Test", Rect(10, 400, 200, 100)).front });
+WinBounds.makeFuncs.cs;
+// run it to make the window
+WinBounds.make(\WinBounds_Test);
+// store the bounds
+WinBounds.store(\WinBounds_Test);
+
+// close the test window
+Window.find(\WinBounds_Test).close;
+// -> showOrMake remakes it
+WinBounds.showOrMake(\WinBounds_Test);
+
+// move it somewhere else
+Window.find(\WinBounds_Test).moveTo(10, 10);
+
+// -> showOrMake moves it back
+WinBounds.showOrMake(\WinBounds_Test);
+
+// showOrMake also has a finishfunc which is applied to the old or new window:
+WinBounds.showOrMake(\WinBounds_Test,
+	restore: true,
+	finishFunc: { |w| w.background_(Color(0.4, 0.8, 0.4)) }
+);
 
 ::
 
@@ -116,5 +144,17 @@ METHOD:: restore
 argument:: name
 restore bounds rect of a currently open window by window name.
 
+METHOD:: makeFuncs
+a dictionary of window-making functions
 
+METHOD:: addMake
+add a make function to makeFuncs by name
 
+METHOD:: make
+make the window with that name
+
+METHOD:: showOrMake
+if a window with that name exists, move it to its position
+if not, make the window by running its named makefunc
+(see examples)
+s
