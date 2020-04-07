@@ -2,9 +2,10 @@
 WinBounds {
 	classvar <stored;
 	classvar <makeFuncs;
+	classvar <>postMissingBounds = false;
 
 	*initClass {
-		stored = ();
+		stored = (); // NamedList.new;
 		makeFuncs = ();
 	}
 
@@ -72,9 +73,11 @@ WinBounds {
 			"WinBounds: cannot restore bounds for nil.".postln;
 			^this
 		};
-		found = WinBounds.at(win.name.asSymbol.postcs);
+		found = WinBounds.at(win.name.asSymbol);
 		if (found.isNil) {
-			"WinBounds: no bounds found for win.name.".postln;
+			if (postMissingBounds) {
+				"WinBounds: no bounds found for window %.\n".postf(win.name.cs);
+			};
 			^this
 		};
 		win.bounds_(found);
