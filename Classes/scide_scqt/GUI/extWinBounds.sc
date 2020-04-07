@@ -30,6 +30,17 @@ Window.getAllCS;
 
 */
 
++ Point {
+	flipY { ^x @ (Window.screenBounds - y) }
+}
+
++ Rect {
+	flipY {
+		var flippedTop = Window.screenBounds.height - this.top - this.height;
+		^Rect( left, flippedTop, width, height );
+	}
+}
+
 + Window {
 
 	*find { |name|
@@ -72,5 +83,13 @@ Window.getAllCS;
 	moveTo { |left, top|
 		var bounds = this.bounds;
 		this.bounds_(bounds.left_(left ? bounds.left).top_(top ? bounds.top))
+	}
+
+	width_ { |width|
+		this.bounds(this.bounds.width_(width))
+	}
+
+	height_ { |height|
+		this.bounds(this.bounds.flipY.height_(height).flipY)
 	}
 }
