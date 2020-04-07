@@ -210,6 +210,9 @@ MFunc : AbstractFunction {
 		toDisable = modeLists[toDisable] ? toDisable;
 		this.disable(toDisable.value).enable(newMode[\on].value);
 	}
+
+	// can put this in ServerTree
+	doOnServerTree { arg server; this.value(server) }
 }
 
 MFdef : MFunc {
