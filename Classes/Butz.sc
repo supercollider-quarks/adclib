@@ -10,9 +10,8 @@ Butz {
 			font: Font("Monaco", 18),
 			fontCol: Color.white,
 			butCol: Color.yellow(1.0, 0.3),
-			winLoc: 5@500,
-			winExtent: 150@400,
-
+			winLoc: 5@30,
+			winExtent: 120@120
 		);
 		actions = NamedList();
 		defBounds = ();
@@ -26,6 +25,7 @@ Butz {
 			this.setButton(actions.names.indexOf(name));
 		}
 	}
+
 	*remove { |name|
 		actions.removeAt(name);
 		if (butz.notNil) { this.updateButtons }
@@ -42,14 +42,15 @@ Butz {
 			^this
 		};
 		this.makeWin;
-		this.updateButtons;
 	}
 
 	*makeWin {
 		var style = Butz.style;
-		var rect = Rect.fromPoints( style.winLoc, style.winLoc + style.winExtent);
-		var win = Window(style.name, rect).front;
+		var win = Window(style.name, style.winExtent.asRect);
 		var numB = max(Butz.numButz, Butz.actions.size);
+		var winLocX = style.winLoc.x;
+		var winLocY = Window.screenBounds.height - style.winLoc.y;
+
 		w = win;
 		w.alwaysOnTop_(true).userCanClose_(false);
 		w.background_(style.winCol);
@@ -58,7 +59,22 @@ Butz {
 				Button(w).states_([this.blankState]).font_(style.font)
 			})
 		);
-		this.updateButtons;
+
+		^win.moveTo(winLocX, winLocY).front;
+	}
+
+	*showButs { |butsToShow, wait = 0.01|
+		var bnds = Butz.w.bounds;
+		var bottom = bnds.bottom;
+		var left = bnds.left;
+		butsToShow = butsToShow ? Butz.butz.size;
+		fork ({
+			Butz.butz.do { |but, i|
+				but.visible_(i < butsToShow);
+			};
+			wait.wait;
+			Butz.w.bounds_(Rect(left, bottom, 120, 24));
+		}, AppClock);
 	}
 
 	*blankState { ^[ " . . . ", style.fontCol, style.butCol ] }
