@@ -21,6 +21,7 @@ WinBounds {
 
 		if (win.isNil or: { win.isClosed }) {
 			win = WinBounds.make(name);
+			if (win.isNil) { ^this };
 		};
 		if (restore) {
 			WinBounds.restoreWin(win)
