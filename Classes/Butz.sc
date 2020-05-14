@@ -20,6 +20,16 @@ Butz {
 	*run { |name| actions[name].value }
 
 	*add { |name, action|
+		if (name.isNil) {
+		//	"Butz.add: cannot add action without name, so ignored.\n"
+			^this
+		};
+		if (action.isNil and: actions[name].notNil) {
+			// "Butz.add: protects from overwriting an existing action with nil, so ignored.\n"
+			// "to remove an action, use Butz.remove(<name>).".postln;
+			^this
+		};
+
 		actions.add(name, action);
 		if (butz.notNil) {
 			this.setButton(actions.names.indexOf(name));
