@@ -26,6 +26,8 @@ SortedNList : SortedList {
 	// not efficient but simple
 	sort {
 		super.sort;
-		array = array.keep(maxSize);
+		if (array.size > maxSize) {
+			array = array.keep(maxSize)
+		}
 	}
 }
