@@ -43,6 +43,8 @@ MView : JITView {
 		^super.init(invalue, inparent, inbounds, inoptions).mode_(\number);
 	}
 
+	zone { ^uv }
+
 	makeDrawFunc {
 		super.makeDrawFunc;
 		drawFunc.add(\number, { this.drawNumber }, active: false);

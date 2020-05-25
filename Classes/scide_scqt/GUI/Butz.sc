@@ -101,7 +101,8 @@ Butz {
 		action = action ? actions[index];
 
 		but.states.do { |state| state.put(0, name) };
-		but.states_(but.states);
+
+		defer { but.states_(but.states) };
 		but.action = action;
 	}
 
