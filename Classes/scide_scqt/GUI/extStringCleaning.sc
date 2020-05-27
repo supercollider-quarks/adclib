@@ -15,6 +15,13 @@
 		};
 		^indices
 	}
+	replaceAndCountGremlins { |replaceChar = $_|
+		var count = 0;
+		this.do { |ch, i|
+			if (ch.isClean.not) { count = count + 1; this.put(i, replaceChar) }
+		};
+		^count
+	}
 
 	clean { |space=true|	// strip all non-crossplatform ascii chars.
 		^if (space)		// either add blankspaces
