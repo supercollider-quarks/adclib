@@ -30,11 +30,15 @@ SoundFile.find(Platform.resourceDir +/+ "sounds/""*", { |sf| sf.duration > 1 }).
 	openRead { arg pathName;
 		var fileext;
 		path = pathName ? path;
-		fileext = path.splitext.last;
-		if (fileext.notNil and: { fileext.containsi("psd") }) {
-			"*** evil PSD: %\n".postf(path.cs);
-			^false
-		};
+		Platform.case(
+			\osx, {
+				fileext = path.splitext.last;
+				if (fileext.notNil and: { fileext.containsi("psd") }) {
+					"*** evil PSD: %\n".postf(path.cs);
+					^false
+				}
+			}
+		);
 		^this.prOpenRead(path);
 	}
 
@@ -74,6 +78,3 @@ SoundFile.find(Platform.resourceDir +/+ "sounds/""*", { |sf| sf.duration > 1 }).
 		^exists
 	}
 }
-
-
-
