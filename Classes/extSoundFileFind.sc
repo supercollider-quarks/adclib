@@ -5,42 +5,28 @@
 
 /*
 
-// three fails:
+// three intended fails:
 SoundFile.exists("nope/no/file/there.wav");
 SoundFile.exists("this/is/a/folder/");
 SoundFile.exists("this/is/a/forbidden.psd");
-// stops and says something
+// psd open bug says something
 SoundFile.openRead("/Users/adc/Pictures/DragonFyrAll.psd");
 
 // true:
 SoundFile.exists(Platform.resourceDir +/+ "sounds/a11wlk01-44_1.aiff");
 
-
 SoundFile.openRead("/Users/adc/Pictures/DragonFyrAll.psd")
 SoundFile.pathMatch("/Users/adc/Pictures/DragonFyrAll.psd")
 SoundFile.pathMatch(Platform.resourceDir +/+ "sounds/a11*.aiff");
-SoundFile.find([Platform.resourceDir +/+ "sounds/a11*.aiff"]);
+SoundFile.find([Platform.resourceDir +/+ "sounds/a11*.aiff"]).flat;
+SoundFile.find(Platform.resourceDir +/+ "sounds/""*").flat;
+
 SoundFile.find(Platform.resourceDir +/+ "sounds/""*", { |sf| sf.duration > 1 }).flat;
+SoundFile.find(Platform.resourceDir +/+ "sounds/""*", { |sf| sf.duration <= 1 }).flat;
 
 */
 
 + SoundFile {
-	// temp fix here for SoundFile bug!
-	// avoid trying to open .psd files
-	openRead { arg pathName;
-		var fileext;
-		path = pathName ? path;
-		Platform.case(
-			\osx, {
-				fileext = path.splitext.last;
-				if (fileext.notNil and: { fileext.containsi("psd") }) {
-					"*** evil PSD: %\n".postf(path.cs);
-					^false
-				}
-			}
-		);
-		^this.prOpenRead(path);
-	}
 
 	// find all soundfiles at path patterns
 	// that pass the test:
