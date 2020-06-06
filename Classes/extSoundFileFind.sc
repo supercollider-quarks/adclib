@@ -11,6 +11,7 @@ SoundFile.exists("this/is/a/folder/");
 SoundFile.exists("this/is/a/forbidden.psd");
 // psd open bug says something
 SoundFile.openRead("/Users/adc/Pictures/DragonFyrAll.psd");
+SoundFile.exists("/Users/adc/Pictures/DragonFyrAll.psd");
 
 // true:
 SoundFile.exists(Platform.resourceDir +/+ "sounds/a11wlk01-44_1.aiff");
@@ -47,19 +48,10 @@ SoundFile.find(Platform.resourceDir +/+ "sounds/""*", { |sf| sf.duration <= 1 })
 		^path.pathMatch.select(this.exists(_))
 	}
 
-	*exists { |path|
+	*exists { |path, postExcluded = false|
 		var sf, exists;
-		if (path.last == Platform.pathSeparator) {
-			^false
-		};
-		// SoundFile crashes when trying to read a psd!
-		if (path.splitext.last == "psd") {
-			// "*** evil PSD!".postln;
-			// path.postcs;
-			^false
-		};
 		sf = this.new(path);
-		exists = sf.openRead;
+		exists = sf.openRead(path, postExcluded);
 		if (sf.isOpen) { sf.close };
 		^exists
 	}
