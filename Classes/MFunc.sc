@@ -180,6 +180,23 @@ MFunc : AbstractFunction {
 			}
 		};
 	}
+	
+	valueArray { |...args|
+		if (useTry) { ^this.tryValueArray(*args) };
+		^activeFuncs.array.collect(_.valueArray(*args));
+	}
+
+	tryValueArray { |...args|
+		^activeFuncs.array.collect { |func, i|
+			try {
+				func.valueArray(*args)
+			} {
+				"% : .valueArray failed at %: %\n"
+				.postf(this, activeNames[i].cs, func.cs);
+				'__failed__'
+			}
+		};
+	}
 
 	makeExclusiveModes { |name, modeList, modeNames|
 		modeList = modeList ? modeLists[name];
