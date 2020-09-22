@@ -11,7 +11,7 @@ Butz {
 			fontCol: Color.white,
 			butCol: Color.yellow(1.0, 0.3),
 			winLoc: 5@30,
-			winExtent: 120@120
+			winExtent: 110@120
 		);
 		actions = NamedList();
 		defBounds = ();
@@ -47,7 +47,7 @@ Butz {
 	}
 
 	*show {
-		if (w.notNil) {
+		if (w.notNil and: { w.isClosed.not }) {
 			try { w.front };
 			^this
 		};
@@ -70,6 +70,8 @@ Butz {
 			})
 		);
 
+		win.onClose = { w = nil };
+
 		^win.moveTo(winLocX, winLocY).front;
 	}
 
@@ -83,7 +85,7 @@ Butz {
 				but.visible_(i < butsToShow);
 			};
 			wait.wait;
-			Butz.w.bounds_(Rect(left, bottom, 120, 24));
+			Butz.w.bounds_(Rect(left, bottom, style.winExtent.x, style.winExtent.y));
 		}, AppClock);
 	}
 
