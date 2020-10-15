@@ -2,6 +2,8 @@ BufAnalyzer {
 
 	*initClass {
 
+		Class.initClassTree(SynthDescLib);
+
 		SynthDef(\bufAnalyzeOnsets, { arg buf, thresh=0.12, speedup=1, spacing= 0.2, monitorAmp = 0.1, out = 0;
 			var name = '/bufAnalyzeOnsets';
 			var buffr = BufFrames.ir(buf);
