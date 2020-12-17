@@ -1,0 +1,89 @@
+TITLE:: SpeedLimit
+summary:: limit speed of incomming control messages
+categories:: Control
+
+DESCRIPTION::
+Some control sources run at very fast rates, which may cause too much CPU load by running triggered functions too often.
+SpeedLimit limits these by keeping a minimum time between updates,
+while making sure slower messages are executed immediately.
+
+First code examples:
+
+code::
+
+// make a SpeedLimit class with an action and a minimum waittime:
+// its
+// and time and args for actually evaluated calls;
+// should always do very last message too.
+(
+a = SpeedLimit(
+	// the action: post triggered time since last action,
+	// and the args coming into the function - here, a message countup/down
+	{ |...args|
+		("*** doit: " + [ (Main.elapsedTime - a.lastTime).round(0.001), args ]).postln
+	},
+	// dt, the minimum time to wait before retriggering
+	0.1
+);
+)
+// run test: messages speed up from 0.2 ... 0.01
+// messages thin out as they get faster,
+// and the last message always happens
+(
+fork {
+	(5..100).do { |n|
+		var dt = (1 / n).round(0.001);
+		//
+		"    send: %, %\n".postf(n, dt);
+		// this calls action with triggers filtered by speedlimit:
+		a.filterValue(n);
+		dt.wait;
+	}
+};
+)
+::
+
+CLASSMETHODS::
+
+METHOD:: new
+make a new speedlimit
+argument:: action
+the action to run when triggered
+argument:: dt
+the minimum time to wait before re-triggering
+
+INSTANCEMETHODS::
+
+METHOD:: action
+the action to run when triggered
+
+METHOD:: dt
+the minimum time to wait before re-triggering
+
+METHOD:: filterValue
+Trigger speedLimit action, if limiting permits.
+this is used in place of triggeredFunction.value(*args);
+argument::  ... args
+
+METHOD:: now
+last time a trigger, i.e. a call to filterValue came in
+a.now //
+METHOD:: lastTime
+last time the action ran
+
+METHOD:: latestArgs
+the list of latest arguments received
+
+METHOD:: scheduled
+flag whether there is currently a scheduled next trigger
+
+private:: init
+
+METHOD:: delta
+difference between lastTime and incoming now
+
+EXAMPLES::
+
+code::
+_some_example_code_
+::
