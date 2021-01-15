@@ -37,9 +37,11 @@ SoundFile.find(Platform.resourceDir +/+ "sounds/""*", { |sf| sf.duration <= 1 })
 			pathpat.pathMatch.collect { |path|
 				SoundFile(path);
 			}.select { |sndfile|
-				sndfile.openRead and: {
+				var wasFound = sndfile.openRead and: {
 					test.value(sndfile)
-				}
+				};
+				if (sndfile.isOpen) { sndfile.close };
+				wasFound
 			}
 		}
 	}
