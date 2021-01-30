@@ -11,7 +11,7 @@ Butz {
 			fontCol: Color.white,
 			butCol: Color.yellow(1.0, 0.3),
 			winLoc: 5@30,
-			winExtent: 110@120
+			winExtent: 110@40
 		);
 		actions = NamedList();
 		defBounds = ();
@@ -21,7 +21,7 @@ Butz {
 
 	*add { |name, action|
 		if (name.isNil) {
-		//	"Butz.add: cannot add action without name, so ignored.\n"
+			//	"Butz.add: cannot add action without name, so ignored.\n"
 			^this
 		};
 		if (action.isNil and: actions[name].notNil) {
@@ -79,6 +79,7 @@ Butz {
 		var bnds = Butz.w.bounds;
 		var bottom = bnds.bottom;
 		var left = bnds.left;
+		var rect = Rect(left, bottom, 0, 0);
 		butsToShow = butsToShow ? Butz.butz.size;
 		fork ({
 			Butz.butz.do { |but, i|
@@ -86,7 +87,18 @@ Butz {
 			};
 			wait.wait;
 			Butz.w.bounds_(Rect(left, bottom, style.winExtent.x, style.winExtent.y));
+			Butz.w.bounds_ (Butz.limitToScreen(Butz.w.bounds));
 		}, AppClock);
+	}
+
+	*limitToScreen { |rect|
+		var screenBounds =  Window.availableBounds;
+		var newleft = rect.left.clip(0, screenBounds.width - rect.width);
+		var newwidth = rect.width.clip(0, screenBounds.width - newleft);
+
+		var newTop = rect.top.clip(0, screenBounds.height - rect.height) - 40;
+		var newheight = rect.height.clip(0, screenBounds.height - newTop);
+		^Rect( newleft, newTop, newwidth, newheight );
 	}
 
 	*blankState { ^[ " . . . ", style.fontCol, style.butCol ] }
