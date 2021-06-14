@@ -91,6 +91,7 @@ Butz {
 
 	*showButs { |butsToShow, wait = 0.01|
 		var bnds = Butz.w.bounds;
+		// flipped, so this stores orig top
 		var origBottom = bnds.bottom;
 		butsToShow = butsToShow ? Butz.butz.size;
 		fork ({
