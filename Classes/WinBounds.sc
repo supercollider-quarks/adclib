@@ -30,9 +30,6 @@ WinBounds {
 		if (restore) {
 			WinBounds.restoreWin(win)
 		};
-		if (fitWindowsToScreen) {
-			WinBounds.fitToScreen(win)
-		};
 		win.front;
 		finishFunc.value(win);
 	}
@@ -87,6 +84,9 @@ WinBounds {
 				"WinBounds: no bounds found for window %.\n".postf(win.name.cs);
 			};
 			^this
+		};
+		if (fitWindowsToScreen) {
+			found = this.limitRectToScreen(found);
 		};
 		win.bounds_(found);
 	}
