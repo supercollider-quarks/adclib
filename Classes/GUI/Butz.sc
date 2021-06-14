@@ -75,9 +75,14 @@ Butz {
 		w.background_(style.winCol);
 		w.layout = VLayout(
 			*(butz = numB.collect {
-				Button(w).states_([this.blankState]).font_(style.font)
+				Button(w).states_([this.blankState])
+				.font_(style.font)
 			})
 		);
+		w.layout.margins_(style.margins);
+		w.layout.margins_(style.spacing);
+
+		this.updateButtons;
 
 		win.onClose = { w = nil };
 
