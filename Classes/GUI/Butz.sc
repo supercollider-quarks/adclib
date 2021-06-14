@@ -10,7 +10,7 @@ Butz {
 			font: Font("Monaco", 16),
 			fontCol: Color.white,
 			butCol: Color.yellow(1.0, 0.3),
-			winLoc: 5@30,
+			winLoc: 5@50,
 			winExtent: 110@40, // minimize
 			margins: [0,0],
 			spacing: 0
@@ -76,10 +76,11 @@ Butz {
 
 	*makeWin {
 		var style = Butz.style;
-		var win = Window(style.name, style.winExtent.asRect);
-		var numB = max(Butz.numButz, Butz.actions.size);
 		var winLocX = style.winLoc.x;
-		var winLocY = Window.screenBounds.height - style.winLoc.y;
+		var winLocY = style.winLoc.y;
+		var initRect = Window.flipY(Rect(winLocX, winLocY, style.winExtent.x, style.winExtent.y));
+		var win = Window(style.name, initRect);
+		var numB = max(Butz.numButz, Butz.actions.size);
 
 		w = win;
 		w.alwaysOnTop_(true).userCanClose_(false);
@@ -93,11 +94,11 @@ Butz {
 		w.layout.margins_(style.margins);
 		w.layout.spacing_(style.spacing);
 
-		this.updateButtons;
-
 		win.onClose = { w = nil };
 
-		^win.moveTo(winLocX, winLocY).front;
+		this.updateButtons.showButs;
+
+		^win.front;
 	}
 
 	*showButs { |butsToShow, wait = 0.01|
