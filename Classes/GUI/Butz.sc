@@ -91,17 +91,26 @@ Butz {
 
 	*showButs { |butsToShow, wait = 0.01|
 		var bnds = Butz.w.bounds;
-		var bottom = bnds.bottom;
-		var left = bnds.left;
-		var rect = Rect(left, bottom, 0, 0);
+		var origBottom = bnds.bottom;
 		butsToShow = butsToShow ? Butz.butz.size;
 		fork ({
 			Butz.butz.do { |but, i|
 				but.visible_(i < butsToShow);
 			};
 			wait.wait;
-			Butz.w.bounds_(Rect(left, bottom, style.winExtent.x, style.winExtent.y));
-			Butz.w.bounds_ (Butz.limitToScreen(Butz.w.bounds));
+			// make it small, so it gets minimal size
+			// for its number of butsToShow:
+			Butz.w.bounds_(
+				bnds.extent_(Butz.style.winExtent)
+			);
+			// now it has its minimum size,
+			// move it to its previous top,
+			// and limit to screen height
+			Butz.w.bounds_(
+				WinBounds.limitRectToScreen(
+					Butz.w.bounds.bottom_(origBot)
+				)
+			)
 		}, AppClock);
 	}
 
