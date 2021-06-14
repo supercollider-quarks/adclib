@@ -7,11 +7,13 @@ Butz {
 		style = (
 			winCol: Color.red,
 			name: "Butz",
-			font: Font("Monaco", 18),
+			font: Font("Monaco", 16),
 			fontCol: Color.white,
 			butCol: Color.yellow(1.0, 0.3),
 			winLoc: 5@30,
-			winExtent: 110@120
+			winExtent: 110@40, // minimize
+			margins: [0,0],
+			spacing: 0
 		);
 		actions = NamedList();
 		defBounds = ();
@@ -21,7 +23,7 @@ Butz {
 
 	*add { |name, action|
 		if (name.isNil) {
-		//	"Butz.add: cannot add action without name, so ignored.\n"
+			//	"Butz.add: cannot add action without name, so ignored.\n"
 			^this
 		};
 		if (action.isNil and: actions[name].notNil) {
@@ -34,6 +36,13 @@ Butz {
 		if (butz.notNil) {
 			this.setButton(actions.names.indexOf(name));
 		}
+	}
+	// convenience for small/big flip
+	*addMiniMax {
+		Butz.actions.addFirst(\miniMax, {
+			var numToShow = if (Butz.butz[1].visible, 1, nil);
+			Butz.showButs(numToShow);
+		})
 	}
 
 	*remove { |name|
@@ -54,6 +63,17 @@ Butz {
 		this.makeWin;
 	}
 
+	*checkFontSize {
+		// estimate layout height, and reduce font size if needed
+		var maxbutheight = (Window.screenBounds.height - 24 / (Butz.actions.size));
+		var maxfontsize = (maxbutheight / 2 - style.spacing).asInteger;
+		if (style.font.size > maxfontsize) {
+			"Butz: reduce fontsize to %".postf(maxfontsize);
+			style.font.size = maxfontsize;
+			butz.do(_.font_(style.font))
+		}
+	}
+
 	*makeWin {
 		var style = Butz.style;
 		var win = Window(style.name, style.winExtent.asRect);
@@ -66,9 +86,14 @@ Butz {
 		w.background_(style.winCol);
 		w.layout = VLayout(
 			*(butz = numB.collect {
-				Button(w).states_([this.blankState]).font_(style.font)
+				Button(w).states_([this.blankState])
+				.font_(style.font)
 			})
 		);
+		w.layout.margins_(style.margins);
+		w.layout.spacing_(style.spacing);
+
+		this.updateButtons;
 
 		win.onClose = { w = nil };
 
@@ -77,15 +102,28 @@ Butz {
 
 	*showButs { |butsToShow, wait = 0.01|
 		var bnds = Butz.w.bounds;
-		var bottom = bnds.bottom;
-		var left = bnds.left;
+		// flipped, so this stores orig top
+		var origBottom = bnds.bottom;
 		butsToShow = butsToShow ? Butz.butz.size;
 		fork ({
 			Butz.butz.do { |but, i|
 				but.visible_(i < butsToShow);
 			};
 			wait.wait;
-			Butz.w.bounds_(Rect(left, bottom, style.winExtent.x, style.winExtent.y));
+			// make it small, so it gets minimal size
+			// for its number of butsToShow:
+			Butz.w.bounds_(
+				bnds.extent_(Butz.style.winExtent)
+			);
+			// now it has its minimum size,
+			// move it to its previous top,
+			// and limit to screen height
+			Butz.w.bounds_(
+				WinBounds.limitRectToScreen(
+					// flipped, so this restores orig top
+					Butz.w.bounds.bottom_(origBottom)
+				)
+			)
 		}, AppClock);
 	}
 
@@ -109,6 +147,7 @@ Butz {
 	}
 
 	*updateButtons {
+		this.checkFontSize;
 		butz.do { |bt, i| this.setButton(i) }
 	}
 }

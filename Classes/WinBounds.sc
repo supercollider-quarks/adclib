@@ -3,6 +3,10 @@ WinBounds {
 	classvar <stored;
 	classvar <makeFuncs;
 	classvar <>postMissingBounds = false;
+	// macOS:
+	classvar <>menuOffset = 23, <>titleOffset = 22;
+	// test and put into startup for win, linux, raspi
+	classvar <>fitWindowsToScreen = true;
 
 	*initClass {
 		stored = (); // NamedList.new;
@@ -81,6 +85,33 @@ WinBounds {
 			};
 			^this
 		};
+		if (fitWindowsToScreen) {
+			found = this.limitRectToScreen(found);
+		};
 		win.bounds_(found);
 	}
+
+	*fitToScreen { |w|
+		w.bounds_(this.limitRectToScreen(w.bounds))
+	}
+
+	// titleBarHeight may not be needed
+	*limitRectToScreen { |rect, titleBarHeight = 0, inScreenBounds|
+		var screenBounds = inScreenBounds ? Window.availableBounds;
+		var maxTop = screenBounds.top + titleBarHeight;
+		var maxHeight = screenBounds.height - titleBarHeight;
+		var newrect = Window.flipY(rect);
+
+		// limit to screen size
+		newrect.width = min(newrect.width, screenBounds.width);
+		newrect.height = min(newrect.height, maxHeight);
+		// bring in left, top
+		newrect.left = max(newrect.left, 0);
+		newrect.top = max(newrect.top, maxTop);
+		newrect.right = min(newrect.right, screenBounds.width);
+		newrect.bottom = min(newrect.bottom, screenBounds.bottom);
+
+		^Window.flipY(newrect)
+	}
+
 }
