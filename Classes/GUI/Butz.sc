@@ -37,6 +37,13 @@ Butz {
 			this.setButton(actions.names.indexOf(name));
 		}
 	}
+	// convenience for small/big flip
+	*addMiniMax {
+		Butz.actions.addFirst(\miniMax, {
+			var numToShow = if (Butz.butz[1].visible, 1, nil);
+			Butz.showButs(numToShow);
+		})
+	}
 
 	*remove { |name|
 		actions.removeAt(name);
