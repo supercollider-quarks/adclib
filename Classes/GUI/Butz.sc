@@ -7,11 +7,13 @@ Butz {
 		style = (
 			winCol: Color.red,
 			name: "Butz",
-			font: Font("Monaco", 18),
+			font: Font("Monaco", 16),
 			fontCol: Color.white,
 			butCol: Color.yellow(1.0, 0.3),
 			winLoc: 5@30,
-			winExtent: 110@40
+			winExtent: 110@40, // minimize
+			margins: [0,0],
+			spacing: [0,0]
 		);
 		actions = NamedList();
 		defBounds = ();
