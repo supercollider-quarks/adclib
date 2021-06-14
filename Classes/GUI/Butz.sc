@@ -13,7 +13,7 @@ Butz {
 			winLoc: 5@30,
 			winExtent: 110@40, // minimize
 			margins: [0,0],
-			spacing: [0,0]
+			spacing: 0
 		);
 		actions = NamedList();
 		defBounds = ();
@@ -63,6 +63,17 @@ Butz {
 		this.makeWin;
 	}
 
+	*checkFontSize {
+		// estimate layout height, and reduce font size if needed
+		var maxbutheight = (Window.screenBounds.height - 24 / (Butz.actions.size));
+		var maxfontsize = (maxbutheight / 2 - style.spacing).asInteger;
+		if (style.font.size > maxfontsize) {
+			"Butz: reduce fontsize to %".postf(maxfontsize);
+			style.font.size = maxfontsize;
+			butz.do(_.font_(style.font))
+		}
+	}
+
 	*makeWin {
 		var style = Butz.style;
 		var win = Window(style.name, style.winExtent.asRect);
@@ -80,7 +91,7 @@ Butz {
 			})
 		);
 		w.layout.margins_(style.margins);
-		w.layout.margins_(style.spacing);
+		w.layout.spacing_(style.spacing);
 
 		this.updateButtons;
 
@@ -109,7 +120,8 @@ Butz {
 			// and limit to screen height
 			Butz.w.bounds_(
 				WinBounds.limitRectToScreen(
-					Butz.w.bounds.bottom_(origBot)
+					// flipped, so this restores orig top
+					Butz.w.bounds.bottom_(origBottom)
 				)
 			)
 		}, AppClock);
@@ -135,6 +147,7 @@ Butz {
 	}
 
 	*updateButtons {
+		this.checkFontSize;
 		butz.do { |bt, i| this.setButton(i) }
 	}
 }
