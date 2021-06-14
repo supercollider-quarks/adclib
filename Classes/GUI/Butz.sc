@@ -105,16 +105,6 @@ Butz {
 		}, AppClock);
 	}
 
-	*limitToScreen { |rect|
-		var screenBounds =  Window.availableBounds;
-		var newleft = rect.left.clip(0, screenBounds.width - rect.width);
-		var newwidth = rect.width.clip(0, screenBounds.width - newleft);
-
-		var newTop = rect.top.clip(0, screenBounds.height - rect.height) - 40;
-		var newheight = rect.height.clip(0, screenBounds.height - newTop);
-		^Rect( newleft, newTop, newwidth, newheight );
-	}
-
 	*blankState { ^[ " . . . ", style.fontCol, style.butCol ] }
 
 	*setButton { |index|
