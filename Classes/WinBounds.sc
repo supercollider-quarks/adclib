@@ -73,7 +73,7 @@ WinBounds {
 	}
 
 	*restoreWin { |win|
-		var found;
+		var found, newbounds;
 		if (win.isNil) {
 			"WinBounds: cannot restore bounds for nil.".postln;
 			^this
@@ -83,12 +83,12 @@ WinBounds {
 			if (postMissingBounds) {
 				"WinBounds: no bounds found for window %.\n".postf(win.name.cs);
 			};
-			^this
+			// ^this
 		};
 		if (fitWindowsToScreen) {
-			found = this.limitRectToScreen(found);
+			newbounds = this.limitRectToScreen(found ? win.bounds);
 		};
-		win.bounds_(found);
+		win.bounds_(newbounds);
 	}
 
 	*fitToScreen { |w|
