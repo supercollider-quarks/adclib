@@ -7,7 +7,7 @@ Butz {
 		style = (
 			winCol: Color.red,
 			name: "Butz",
-			font: Font("Monaco", 16),
+			font: Font(Font.defaultSansFace, 16),
 			fontCol: Color.white,
 			butCol: Color.yellow(1.0, 0.3),
 			winLoc: 5@50,
