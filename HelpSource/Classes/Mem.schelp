@@ -1,0 +1,102 @@
+TITLE:: Mem
+summary:: Avoid repetitions of recent items
+categories:: Control
+related:: Classes/Pxrand
+
+DESCRIPTION::
+Mem keeps a list of recent items (or keys), so one can avoid
+close repetitions of items with random choices.
+
+First code examples:
+
+code::
+// make a Mem with 50 entries:
+~mem = Mem(0);
+~degrees = (0..7);
+
+// occasional direct repetitions...
+Pdef('mem', Pbind(
+	\degree, Pfunc({
+		var next = ~mem.filter(~degrees).postln.choose;
+		~mem.add(next);
+		next
+	}),
+	\dur, 0.25
+)).play;
+
+// avoid repetition of last note, like Pxrand
+~mem.maxMems = 1;
+
+// avoid last 2 notes played:
+~mem.maxMems = 2;
+// avoid last 5 notes played:
+~mem.maxMems = 5;
+
+~mem.maxMems = 2;
+
+// dry swimming:
+~mem.maxMems = 5;
+~recents = (1..10).scramble.keep(5);
+~recents.do (~mem.add(_));
+~mem.used; // same, but reverse: first is newest
+
+~list = (1..10).scramble.keep(5);
+~list.sect(~mem.used).size;
+~mem.filter(~list).postln.size;
+
+// goes down to minimum:
+~mem.filter(~recents).size;
+// or keeps more choices if minsize is raised
+~mem.filter(~recents, 5).postln.size;
+// same as oldest mem.used:
+~mem.used.keep(-5);
+
+// Mem also works with dictionaries and keys:
+
+(
+~mem2 = Mem(8);
+Tdef(\memhelp, {
+	~dict = ();
+	(1..10).do { |num|
+		~dict.put(num, { "aeiou".choose ++ "bcdfg".choose }.dup(3).join)
+	};
+	inf.do {
+		var choices = ~mem2.filterDict(~dict, 2);
+		var nextkey = choices.keys.choose;
+		var choice = choices[nextkey];
+		~mem2.add(nextkey);
+		("choices: " + choices).postln;
+		("choice: " + choice).postln;
+		1.wait;
+	};
+}).play;
+)
+
+::
+
+CLASSMETHODS::
+
+METHOD:: minSize
+the default minimum number of choices remaining
+
+METHOD:: new
+make a new mems
+argument:: maxMems
+maximum number of remembered items/keys
+
+INSTANCEMETHODS::
+
+METHOD:: filter
+filter a list of items, keeping a minimum of choices open
+
+METHOD:: filterDict
+filter a dict by keys, keeping a minimum of choices open
+
+METHOD:: used
+the recently used items/keys
+
+METHOD:: add
+add an item/key to the used list
+
+METHOD:: maxMems
+get and set the number of keys to remember
