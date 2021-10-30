@@ -7,11 +7,13 @@ Butz {
 		style = (
 			winCol: Color.red,
 			name: "Butz",
-			font: Font("Monaco", 18),
+			font: Font("Monaco", 16),
 			fontCol: Color.white,
 			butCol: Color.yellow(1.0, 0.3),
-			winLoc: 5@30,
-			winExtent: 110@40
+			winLoc: 5@50,
+			winExtent: 110@40, // minimize
+			margins: [0,0],
+			spacing: 0
 		);
 		actions = NamedList();
 		defBounds = ();
@@ -35,6 +37,13 @@ Butz {
 			this.setButton(actions.names.indexOf(name));
 		}
 	}
+	// convenience for small/big flip
+	*addMiniMax {
+		Butz.actions.addFirst(\miniMax, {
+			var numToShow = if (Butz.butz[1].visible, 1, nil);
+			Butz.showButs(numToShow);
+		})
+	}
 
 	*remove { |name|
 		actions.removeAt(name);
@@ -54,51 +63,69 @@ Butz {
 		this.makeWin;
 	}
 
+	*checkFontSize {
+		// estimate layout height, and reduce font size if needed
+		var maxbutheight = (Window.screenBounds.height - 24 / (Butz.actions.size));
+		var maxfontsize = (maxbutheight / 2 - style.spacing).asInteger;
+		if (style.font.size > maxfontsize) {
+			"Butz: reduce fontsize to %".postf(maxfontsize);
+			style.font.size = maxfontsize;
+			butz.do(_.font_(style.font))
+		}
+	}
+
 	*makeWin {
 		var style = Butz.style;
-		var win = Window(style.name, style.winExtent.asRect);
-		var numB = max(Butz.numButz, Butz.actions.size);
 		var winLocX = style.winLoc.x;
-		var winLocY = Window.screenBounds.height - style.winLoc.y;
+		var winLocY = style.winLoc.y;
+		var initRect = Window.flipY(Rect(winLocX, winLocY, style.winExtent.x, style.winExtent.y));
+		var win = Window(style.name, initRect);
+		var numB = max(Butz.numButz, Butz.actions.size);
 
 		w = win;
 		w.alwaysOnTop_(true).userCanClose_(false);
 		w.background_(style.winCol);
 		w.layout = VLayout(
 			*(butz = numB.collect {
-				Button(w).states_([this.blankState]).font_(style.font)
+				Button(w).states_([this.blankState])
+				.font_(style.font)
 			})
 		);
+		w.layout.margins_(style.margins);
+		w.layout.spacing_(style.spacing);
 
 		win.onClose = { w = nil };
 
-		^win.moveTo(winLocX, winLocY).front;
+		this.updateButtons.showButs;
+
+		^win.front;
 	}
 
 	*showButs { |butsToShow, wait = 0.01|
 		var bnds = Butz.w.bounds;
-		var bottom = bnds.bottom;
-		var left = bnds.left;
-		var rect = Rect(left, bottom, 0, 0);
+		// flipped, so this stores orig top
+		var origBottom = bnds.bottom;
 		butsToShow = butsToShow ? Butz.butz.size;
 		fork ({
 			Butz.butz.do { |but, i|
 				but.visible_(i < butsToShow);
 			};
 			wait.wait;
-			Butz.w.bounds_(Rect(left, bottom, style.winExtent.x, style.winExtent.y));
-			Butz.w.bounds_ (Butz.limitToScreen(Butz.w.bounds));
+			// make it small, so it gets minimal size
+			// for its number of butsToShow:
+			Butz.w.bounds_(
+				bnds.extent_(Butz.style.winExtent)
+			);
+			// now it has its minimum size,
+			// move it to its previous top,
+			// and limit to screen height
+			Butz.w.bounds_(
+				WinBounds.limitRectToScreen(
+					// flipped, so this restores orig top
+					Butz.w.bounds.bottom_(origBottom)
+				)
+			)
 		}, AppClock);
-	}
-
-	*limitToScreen { |rect|
-		var screenBounds =  Window.availableBounds;
-		var newleft = rect.left.clip(0, screenBounds.width - rect.width);
-		var newwidth = rect.width.clip(0, screenBounds.width - newleft);
-
-		var newTop = rect.top.clip(0, screenBounds.height - rect.height) - 40;
-		var newheight = rect.height.clip(0, screenBounds.height - newTop);
-		^Rect( newleft, newTop, newwidth, newheight );
 	}
 
 	*blankState { ^[ " . . . ", style.fontCol, style.butCol ] }
@@ -121,6 +148,7 @@ Butz {
 	}
 
 	*updateButtons {
+		this.checkFontSize;
 		butz.do { |bt, i| this.setButton(i) }
 	}
 }

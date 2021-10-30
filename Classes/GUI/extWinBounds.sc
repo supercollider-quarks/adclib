@@ -31,7 +31,7 @@ Window.getAllCS;
 */
 
 + Point {
-	flipY { ^x @ (Window.screenBounds - y) }
+	flipY { ^x @ (Window.screenBounds.height - y) }
 }
 
 + Rect {
