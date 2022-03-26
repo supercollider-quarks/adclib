@@ -17,7 +17,9 @@ code::
 // occasional direct repetitions...
 Pdef('mem', Pbind(
 	\degree, Pfunc({
-		var next = ~mem.filter(~degrees).postln.choose;
+		var choices = ~mem.filter(~degrees);
+		var next = choices.choose;
+		"next: % from: %\n".postf(next, choices);
 		~mem.add(next);
 		next
 	}),
@@ -32,7 +34,11 @@ Pdef('mem', Pbind(
 // avoid last 5 notes played:
 ~mem.maxMems = 5;
 
-~mem.maxMems = 2;
+// constrain to leave only a single remaining option -> loops
+Mem.minSize = 1;
+~mem.maxMems = ~degrees.size;
+
+~mem.maxMems = 6; // and 2 choices again
 
 // dry swimming:
 ~mem.maxMems = 5;
@@ -77,10 +83,10 @@ Tdef(\memhelp, {
 CLASSMETHODS::
 
 METHOD:: minSize
-the default minimum number of choices remaining
+the default minimum number of choices remaining open
 
 METHOD:: new
-make a new mems
+make a new mem
 argument:: maxMems
 maximum number of remembered items/keys
 
