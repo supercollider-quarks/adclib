@@ -1,7 +1,9 @@
 
 Butz {
-	classvar <w, <actions, <butz, <style, <>numButz = 12;
-	classvar <defBounds;
+	classvar <all, <names, <curr;
+	classvar <w, <butz, <pop, <style, <>numButz = 12;
+
+	var <name, <actions;
 
 	*initClass {
 		style = (
@@ -15,44 +17,105 @@ Butz {
 			margins: [0,0],
 			spacing: 0
 		);
+
+		all = ();
+		Butz(\top);
+		this.curr = \top;
+	}
+
+	*curr_ { |name|
+		var found = all[name];
+		if (found.notNil) {
+			curr = found
+		} {
+			"*** Butz:curr no butz found for name %!\n".postf(name);
+		};
+		"// Butz.curr is %.\n".postf(curr);
+		this.update;
+	}
+
+	*hasWin { ^w.notNil and: { w.isClosed.not } }
+
+	*new { |name|
+		var found = all[name];
+		found !? { ^found };
+		^this.basicNew(name)
+	}
+
+	*basicNew { |name|
+		^super.newCopyArgs(name.asSymbol).init
+	}
+
+	init {
 		actions = NamedList();
-		defBounds = ();
+		all.put(this.name, this);
+		if (name != \top) {
+			actions.dict.parent = Butz(\top).actions.dict
+		};
+		this.class.update
 	}
 
-	*run { |name| actions[name].value }
+	storeArgs { ^[name] }
+	printOn { |stream| ^this.storeOn(stream) }
 
-	*add { |name, action|
-		if (name.isNil) {
-			//	"Butz.add: cannot add action without name, so ignored.\n"
-			^this
-		};
-		if (action.isNil and: actions[name].notNil) {
-			// "Butz.add: protects from overwriting an existing action with nil, so ignored.\n"
-			// "to remove an action, use Butz.remove(<name>).".postln;
-			^this
-		};
-
-		actions.add(name, action);
-		if (butz.notNil) {
-			this.setButton(actions.names.indexOf(name));
-		}
-	}
 	// convenience for small/big flip
-	*addMiniMax {
-		Butz.actions.addFirst(\miniMax, {
+	*miniMax {
+		if (Butz.hasWin) {
 			var numToShow = if (Butz.butz[1].visible, 1, nil);
 			Butz.showButs(numToShow);
-		})
+		}
 	}
 
-	*remove { |name|
+	*addMiniMax { Butz(\top).addMiniMax }
+	addMiniMax {
+		actions.addFirst(\miniMax, { Butz.miniMax  });
+		this.class.update
+	}
+
+	*run { |name|  Butz(\top).run(name) }
+	run { |name|  actions[name].value }
+
+	*add { |name, action| Butz(\top).add(name, action) }
+	*remove { |name| Butz(\top).remove(name) }
+	*clear { Butz(\top).clear }
+
+	add { |name, action|
+		var hasAction, topAction;
+		if (name.isNil) {
+			"Butz.add: cannot add action without name, so ignored.\n".postln;
+			^this
+		};
+
+		hasAction = actions.dict.keys.includes(name);
+		topAction = actions.dict[name];
+
+		case {
+			action.isNil and: hasAction
+		} {
+			// "no action given, but has one -> keeping action".postln;
+			^this
+		} { action.notNil } {
+			// "adding given action".postln;
+			actions.add(name, action)
+		} { topAction.notNil } {
+			// "adding dynamic lookup to parent dict".postln;
+			actions.add(name, { topAction.value })
+		} {
+			// "adding blank func to keep order of names".postln;
+			actions.add(name, { })
+		};
+
+		this.class.update
+	}
+
+	remove { |name|
 		actions.removeAt(name);
-		if (butz.notNil) { this.updateButtons }
+		this.class.update
 	}
 
-	*clear {
+	clear {
 		actions.clear;
-		this.updateButtons;
+		this.class.update
 	}
 
 	*show {
@@ -65,7 +128,7 @@ Butz {
 
 	*checkFontSize {
 		// estimate layout height, and reduce font size if needed
-		var maxbutheight = (Window.screenBounds.height - 24 / (Butz.actions.size));
+		var maxbutheight = (Window.screenBounds.height - 24 / (curr.actions.size));
 		var maxfontsize = (maxbutheight / 2 - style.spacing).asInteger;
 		if (style.font.size > maxfontsize) {
 			"Butz: reduce fontsize to %".postf(maxfontsize);
@@ -80,12 +143,13 @@ Butz {
 		var winLocY = style.winLoc.y;
 		var initRect = Window.flipY(Rect(winLocX, winLocY, style.winExtent.x, style.winExtent.y));
 		var win = Window(style.name, initRect);
-		var numB = max(Butz.numButz, Butz.actions.size);
+		var numB = max(Butz.numButz, curr.actions.size);
 
 		w = win;
 		w.alwaysOnTop_(true).userCanClose_(false);
 		w.background_(style.winCol);
 		w.layout = VLayout(
+			pop = PopUpMenu().font_(style.font),
 			*(butz = numB.collect {
 				Button(w).states_([this.blankState])
 				.font_(style.font)
@@ -94,9 +158,10 @@ Butz {
 		w.layout.margins_(style.margins);
 		w.layout.spacing_(style.spacing);
 
-		win.onClose = { w = nil };
+		pop.action = { Butz.curr = pop.item };
+		w.onClose = { w = nil };
 
-		this.updateButtons.showButs;
+		this.update.showButs;
 
 		^win.front;
 	}
@@ -131,15 +196,17 @@ Butz {
 	*blankState { ^[ " . . . ", style.fontCol, style.butCol ] }
 
 	*setButton { |index|
-		var but, name, action;
+		var but, name, actions, action;
+
+		actions = curr.actions;
 
 		but = butz[index];
 		but ?? {
 			"*** %: no button at index % for %!\n".postf(this, index, name.cs);
 			^this
 		};
-		name = actions.names[index] ? " . . . ";
-		action = action ? actions[index];
+		name = actions.names[index] ? " . . . ".asSymbol;
+		action = actions[index];
 
 		but.states.do { |state| state.put(0, name) };
 
@@ -147,8 +214,15 @@ Butz {
 		but.action = action;
 	}
 
-	*updateButtons {
-		this.checkFontSize;
-		butz.do { |bt, i| this.setButton(i) }
+	*update {
+		var butznames = all.keys(Array).sort;
+		if (Butz.hasWin) {
+			this.checkFontSize;
+
+			pop.items = butznames;
+			pop.value = butznames.indexOf(curr.name);
+
+			butz.do { |bt, i| this.setButton(i) }
+		}
 	}
 }

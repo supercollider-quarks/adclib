@@ -3,49 +3,89 @@ summary:: Dynamic list of buttons with actions
 categories:: Utilities
 related:: Classes/NamedList
 
+
 DESCRIPTION::
 
-Butz has a named list of actions, which it shows on a GUI as buttons.
+Butz is a global collection of actions which is shown on a GUI as buttons.
 This is useful for opening multiple guis only when needed,
-such as several instruments and their GUIs,
-opening utilities like meters, custom scopes, mixers,
-guis for tests for setup parts (speakers), etc etc.
+such as multiple instrument setups and their GUIs,
+opening utilities such as meters, custom scopes, mixers,
+guis for testing setup parts (speakers), etc etc.
 
-It shows the actions as buttons with given style,
+It shows the actions as buttons with a given style,
 and updates dynamically when items are added.
 
-Butz is a class-only singleton by design choice.
+Butz has a top instance where global actions go,
+and it can switch between different Butzes as groups of
+actions to show.
 
 First code examples:
 
 code::
 Butz.show; // show the window for Butz
 
-// add some instrument names in the order they should appear in
-Butz.add(\manta);
-Butz.add(\AI_NUFO);
-Butz.add(\polyharpye);
-Butz.add(\blippoo);
-Butz.add(\theremax);
-Butz.add('-');
+Butz.all; // currently, only  is present.
+// add some global actions to Butz(\top):
+Butz.add(\testMe);
+Butz.add(\polyharpye, { Butz.curr = \polyharpye });
+Butz.add(\AI_ntmi, { Butz.curr = \AI_ntmi });
+Butz.add(\blippoo, { Butz.curr = \blippoo });
+Butz.add('---');
+Butz.remove(\testMe);
+
+
+Butz.addMiniMax; // toggles between full size and small,
+Butz.miniMax; // like this line of code.
+Butz.miniMax; // like this line of code.
+
+Butz.clear; // clear all Butz(\top)
+
+// and start over:
+(
+Butz.show; // show the window for Butz
+
+Butz.add(\polyharpye, { Butz.curr = \polyharpye });
+Butz.add(\AI_ntmi, { Butz.curr = \AI_ntmi });
+Butz.add(\blippoo, { Butz.curr = \blippoo });
+Butz.add('---');
+
+Butz.addMiniMax;
+)
 
 // add some utility names
 Butz.add(\tdefall);
 Butz.add(\ndefmix);
 
-// some names already with actions
+// fill some names already with actions
 Butz.add(\scope, { s.scope(4) });
 Butz.add(\meter, { s.meter(6, 6).window.moveTo(0, 0) });
-Butz.add(\testSnds); // add some names in order
 Butz.add(\MUTE, { |bt| s.mute });
 Butz.add(\UNMUTE, { |bt| s.unmute });
 
-Butz.remove(\s_meter);
-
 // add the actions later by name
-Butz.add(\tdefall, { TdefAllGui(16).moveTo(10, 800) });
+Butz.add(\tdefall, { TdefAllGui(16).moveTo(120, 800) });
 
-/// change the number of buttons and style aspectss
+// for reusing windows and their locations, see also WinBounds:
+WinBounds.addMake(\tdefall, {
+	TdefAllGui(16).moveTo(120, 800).parent.name_(\tdefall)
+});
+Butz.add(\tdefall, { WinBounds.showOrMake(\tdefall) });
+
+
+// Now, add more Butz objects, with their own choice of actions
+Butz(\AI_ntmi);
+Butz(\polyharpye);
+
+// switch it to front
+Butz.curr_(\AI_ntmi);
+Butz(\AI_ntmi).clear;
+Butz(\AI_ntmi).addMiniMax;
+Butz(\AI_ntmi).add(\NTMI); // open its main window
+Butz(\AI_ntmi).add(\influx); // open its influx window
+
+Butz(\AI_ntmi).add(\scope);
+
+/// change the number of buttons and style aspects
 Butz.style;
 Butz.numButz = 20;
 Butz.style.winExtent.x = 120;
@@ -53,11 +93,15 @@ Butz.style.font.size = 16;
 // remake the window
 Butz.makeWin;
 
-// and add more stuff
+// and add more general stuff
 Butz.add(\plotTree, { s.plotTree });
-Butz.add(\drawMap);
-Butz.add(\save_scene);
-Butz.add(\chord_explo);
+
+// and some specifics to the third Butz
+Butz(\polyharpye).add(\drawMap);
+Butz(\polyharpye).add(\save_scene);
+Butz(\polyharpye).add(\chord_explo);
+
+Butz.pop.valueAction = Butz.pop.items.size.rand;
 
 // can access button if needed
 Butz.add(\getBut, { |bt| bt.dump });
@@ -69,28 +113,24 @@ CLASSMETHODS::
 private:: initClass, defBounds, blankState
 
 METHOD:: add
-add a named action
-
+add a named global action to Butz(\top)
 argument:: name
 a Symbol
 argument:: action
 a function
 
 METHOD:: remove
-remove an action  by name
+remove an global action  by name
 argument:: name
 a Symbol
 
-METHOD:: actions
-the code::NamedList:: of actions
-
 METHOD:: run
 argument:: name
-run the action at that name
+run the global action at that name
 
 
 METHOD:: show
-show the Butz window, making it if necessary
+show the Butz window, or make it if necessary
 
 METHOD:: makeWin
 make the window
@@ -111,5 +151,5 @@ METHOD:: setButton
 argument:: index
 set the button at index to show the name stored at that index
 
-METHOD:: updateButtons
-update the buttons
+METHOD:: update
+update the Butz window
