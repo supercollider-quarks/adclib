@@ -47,8 +47,10 @@ MView : JITView {
 
 	makeDrawFunc {
 		super.makeDrawFunc;
-		drawFunc.add(\number, { this.drawNumber }, active: false);
+		// make sure slider / level gets drawn under label and number as digits
+		drawFunc.addAfter(\number, { this.drawNumber }, active: false, otherName: \prep);
 		drawFunc.add(\ghost, { this.drawGhost }, active: false);
+
 		drawFunc.modes.put(\code, (on: \code, off: \number));
 		drawFunc.modes.put(\number, (on: [\number, \code]));
 	}
@@ -193,13 +195,12 @@ MView : JITView {
 			0, { ^this.cannotDrawNumber }
 		);
 	}
-
+	// horizontal Slider
 	drawSingleNumber {
 
 		var normval = this.getUni;
 		var xval, dot, height;
 
-		normval = this.getUni;
 		if (normval.isNil) { ^this.cannotDrawNumber };
 
 		xval = normval * dict[\width];
@@ -214,6 +215,22 @@ MView : JITView {
 		Pen.color_(dict[\knobCCol]);
 		Pen.width_(2);
 		Pen.addArc(dot, 6, 0, 2pi).fill;
+	}
+
+	// vertical level
+	drawSingleLevel {
+
+		var normval = this.getUni;
+		var height, yval;
+
+		if (normval.isNil) { ^this.cannotDrawNumber };
+		height = dict[\height];
+		yval = normval * height;
+
+		Pen.color_(dict[\levelCol] ? dict[\knobCol]);
+		Pen.addRect(Rect(0, height - yval, dict.width, height), 5, 5);
+		Pen.fill;
+
 	}
 
 	drawMultiNumber {
@@ -319,6 +336,28 @@ MView : JITView {
 							dict[\xvals].maxItem)) {
 							dict[\moveMode] = \shiftRange;
 		}; }; }; } };
+	}
+
+	mouseMoveLevel { |uv, x, y, mod|
+		var normY = 1 - (y / dict[\height]); // high is up
+		var xy = x@y;
+		// "mouseMove: % x: % y: % normval: % \n".postf(dict[\moveMode], x, y, normY);
+		(
+			\number: { this.setUni(nil, normY) },
+			\shiftRange: {
+				this.shiftRange(normY - dict[\normY], dict[\shiftMode]);
+			},
+			\scaleMin: { this.scaleMin(normY) },
+			\scaleMax: { this.scaleMax(normY) },
+			\single: {
+				this.setNormNumByIndex(dict[\foundIndex], normY);
+			}
+		)[dict[\moveMode]].value;
+		// cache these after doing the actions:
+		dict[\mousexy] = xy;
+		dict[\normY] = normY;
+		this.doAction;
+		this.refresh;
 	}
 
 	mouseMoveNumber { |uv, x, y, mod|
