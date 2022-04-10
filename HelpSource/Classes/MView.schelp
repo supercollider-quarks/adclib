@@ -216,6 +216,28 @@ e.action = { |sl|
 };
 )
 
+//// modify MView looks:
+(
+MView.styleDict.focusCol = Color.grey(0.75);
+MView.styleDict.backCol = Color.grey(0.6);
+MView.styleDict.labelCol = Color.blue(1.0);
+MView.styleDict.valCol = Color.red(1.0);
+MView.styleDict.put(\levelCol, Color.white);
+
+// make a JITView: value, parent, bounds
+m = MView(123, nil, Rect(100, 100, 60, 100));
+m.label_(\freq);
+// needs a spec to display proper number range
+m.putDict(\myspec, \freq.asSpec.copy.step_(0.01)).refresh;
+
+// replace sliderlike number drawfunc
+// with a vertical level view
+m.drawFunc.add(\number, { m.drawSingleLevel });
+// replace mouseMoveAction too
+m.uv.mouseMoveAction.add(\number, { |uv, x, y, mod|
+	m.mouseMoveLevel(uv, x, y, mod)
+});
+// add a debug post func
+m.action.add(\post, { |m| [m.label, m.value].postln });
+)
 ::
-
-
