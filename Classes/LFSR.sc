@@ -38,7 +38,7 @@ LFSR {
 	}
 
 	nextN { |num = 100|
-		^num.collect (this.next)
+		^num.collect { this.next }
 	}
 
 	// create all values at once
