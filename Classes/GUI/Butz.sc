@@ -19,6 +19,7 @@ Butz {
 		);
 
 		all = ();
+		names = List[];
 		Butz(\top);
 		this.curr = \top;
 	}
@@ -49,6 +50,7 @@ Butz {
 	init {
 		actions = NamedList();
 		all.put(this.name, this);
+		if (names.includes(name).not) { names.add(this.name) };
 		if (name != \top) {
 			actions.dict.parent = Butz(\top).actions.dict
 		};
@@ -70,6 +72,10 @@ Butz {
 	addMiniMax {
 		actions.addFirst(\miniMax, { Butz.miniMax  });
 		this.class.update
+	}
+
+	*closeAll {
+		Window.allWindows.copy.do { |win| if (win != w) { win.close } }
 	}
 
 	*run { |name|  Butz(\top).run(name) }
@@ -215,12 +221,14 @@ Butz {
 	}
 
 	*update {
-		var butznames = all.keys(Array).sort;
+		var namesToShow = all.keys(Array).sort;
+		namesToShow = names ++ (namesToShow.removeAll(names));
+
 		if (Butz.hasWin) {
 			this.checkFontSize;
 
-			pop.items = butznames;
-			pop.value = butznames.indexOf(curr.name);
+			pop.items = namesToShow;
+			pop.value = namesToShow.indexOf(curr.name);
 
 			butz.do { |bt, i| this.setButton(i) }
 		}
