@@ -25,13 +25,14 @@ WinBounds {
 
 		if (win.isNil or: { win.isClosed }) {
 			win = WinBounds.make(name);
-			if (win.isNil) { ^this };
+			if (win.isNil) { ^nil };
 		};
 		if (restore) {
 			WinBounds.restoreWin(win)
 		};
-		win.front;
+		defer ({ win.front }, 0.02);
 		finishFunc.value(win);
+		^win
 	}
 
 	*saveString {
