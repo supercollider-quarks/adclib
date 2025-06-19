@@ -1,6 +1,6 @@
 
 Butz {
-	classvar <all, <names, <curr;
+	classvar <all, <names, <curr, <>funcsDir;
 	classvar <w, <butz, <pop, <style, <>numButz = 12;
 
 	var <name, <actions;
@@ -17,6 +17,8 @@ Butz {
 			margins: [0,0],
 			spacing: 0
 		);
+
+		// funcsDir = (Quark("adclib").localPath +/+ "Butz_funcs");
 
 		all = ();
 		names = List[];
@@ -45,6 +47,13 @@ Butz {
 
 	*basicNew { |name|
 		^super.newCopyArgs(name.asSymbol).init
+	}
+
+	load { |path|
+		var res = path.loadPaths;
+		if (res.isKindOf(Function) or: res.isKindOf(MFunc)) {
+			this.add(path.basename)
+		}
 	}
 
 	init {
@@ -148,12 +157,12 @@ Butz {
 		var winLocX = style.winLoc.x;
 		var winLocY = style.winLoc.y;
 		var initRect = Window.flipY(Rect(winLocX, winLocY, style.winExtent.x, style.winExtent.y));
-		var win = Window(style.name, initRect);
 		var numB = max(Butz.numButz, curr.actions.size);
 
-		w = win;
+		w = Window(style.name, initRect);
 		w.alwaysOnTop_(true).userCanClose_(false);
-		w.background_(style.winCol);
+		w.background_(style.winCol).alpha_(style.alpha ? 1);
+
 		w.layout = VLayout(
 			pop = PopUpMenu().font_(style.font),
 			*(butz = numB.collect {
@@ -169,7 +178,7 @@ Butz {
 
 		this.update.showButs;
 
-		^win.front;
+		^w.front;
 	}
 
 	*showButs { |butsToShow, wait = 0.01|
