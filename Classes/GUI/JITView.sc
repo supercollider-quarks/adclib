@@ -48,6 +48,9 @@ JITView {
 		^super.new.init(value, parent, bounds, options);
 	}
 
+	object { ^dict.object }
+	object_ { |obj| dict.put(\object, obj) }
+
 	asView { ^uv }
 
 	init { |invalue, inparent, inbounds, inoptions|
