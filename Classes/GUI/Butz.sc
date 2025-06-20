@@ -71,8 +71,9 @@ Butz {
 
 	// convenience for small/big flip
 	*miniMax {
+		var numToShow;
 		if (Butz.hasWin) {
-			var numToShow = if (Butz.butz[1].visible, 1, nil);
+			numToShow = if (Butz.butz[1].visible, 1, nil);
 			Butz.showButs(numToShow);
 		}
 	}
