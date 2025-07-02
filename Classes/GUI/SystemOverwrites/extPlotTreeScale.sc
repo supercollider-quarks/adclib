@@ -8,22 +8,26 @@ g = Group.new.isPlaying_(true);
 
 fork { 100.do { ().play; 0.3.rand.wait } };
 
+renamed these to plotTree2 and plotTreeView2 for now,
+so they do not overwrite newer implementation in main SC.
+Need to look whether anything is useful in the overwrites here.
+
 */
 
 + Server {
-	plotTree {|interval=0.5, tabSize = 25|
+	plotTree2 {|interval=0.5, tabSize = 25|
 		var onClose, window = Window.new(name.asString + "Node Tree",
 			Rect(128, 64, 400, 400),
 			scroll:true
 		).front;
 		window.view.hasHorizontalScroller_(false).background_(Color.grey(0.9));
-		onClose = this.plotTreeView(interval, window.view, { defer {window.close}; }, tabSize);
+		onClose = this.plotTreeView2(interval, window.view, { defer {window.close}; }, tabSize);
 		window.onClose = {
 			onClose.value;
 		};
 	}
 
-	plotTreeView {|interval=0.5, parent, actionIfFail, tabSize = 25|
+	plotTreeView2 {|interval=0.5, parent, actionIfFail, tabSize = 25|
 		var resp, done = false;
 		var collectChildren, levels, countSize;
 		var view, bounds;
